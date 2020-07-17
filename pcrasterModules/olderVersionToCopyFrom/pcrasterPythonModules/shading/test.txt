@@ -1,0 +1,1 @@
+/usr/local/projects-kor/genwebsite/bin:/usr/local/pcrtree2/PCRasterPython::/home/derek/python:/home/derek/acsprfGA/alluvialModel:/home/derek/acsprfGA/template:/home/derek/pcrasterPythonModules:/home/derek/pcrasterPythonModules/datetime:/home/derek/pcrasterPythonModules/shading:/home/derek/pythonModules/pysolar:/usr/local/pcrtree2/PCRasterPython

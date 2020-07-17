@@ -1,0 +1,74 @@
+import string
+import os, shutil, numpy
+import generalfunctions
+import matplotlib.pyplot as plt
+from PCRaster import *
+from PCRaster.Framework import *
+import aggregationfunctionsDK
+
+
+sampleNumbers=range(1,101,1)
+timeSteps=range(1,11,1)
+row=1
+col=1
+#data = aggregationfunctionsDK.mySelectTArrayForSamples("jan", sampleNumbers, timeSteps, row, col)
+#print data
+
+def plotRealizationsTss(data,xlim,ylim):
+  i = 0
+  while i < len(sampleNumbers):
+    plt.plot(data[:,0],data[:,i+1],color="black")
+    i = i + 1
+  if len(xlim) > 0:
+    plt.xlim(xlim)
+  if len(ylim) > 0:
+    plt.ylim(ylim)
+  plt.xlabel("time")
+  plt.ylabel("semivariance")
+  plt.show()
+  plt.gcf().clear()
+
+#data=numpy.loadtxt("/home/derek/critTrans/Mar17/observationalData/sc01/bs_r1_c1.tss.txt")
+#print data
+#plotRealizationsTss(data,[],[0,0.1])
+
+def plotRealizationsHistogram(data, timesteps,rows,cols):
+  i = 1
+  for timestep in timesteps:
+    theTimestep = data[:,0] == timestep
+    dataValues=numpy.compress(theTimestep,data,0)
+    plt.subplot(rows,cols,i)
+    i = i+1
+    #plt.hist(numpy.log(dataValues[0,1:]))
+    plt.hist(dataValues[0,1:])
+    print numpy.var(dataValues[0,1:])
+    plt.xlabel("timestep:" + str(timestep))
+  plt.show()
+  plt.gcf().clear()
+
+#data=numpy.loadtxt("/home/derek/critTrans/Mar17/observationalData/sc01/cs_r1_c1.tss.txt")
+#plotRealizationsHistogram(data, range(400,550,50),1,4)
+
+
+# plot median and conf interval
+def plotConfidenceIntervalTss(lower,higher,median,otherTimeseries,xlim,ylim):
+  plt.fill_between(lower[:,0],lower[:,1], higher[:,1],facecolor="gray",linewidth=0)
+  plt.plot(median[:,0],median[:,1],linewidth=1,color="black")
+  if otherTimeseries != "0":
+    plt.plot(otherTimeseries[:,0],otherTimeseries[:,1],color="blue")
+  if len(xlim) > 0:
+    plt.xlim(xlim)
+  if len(ylim) > 0:
+    plt.ylim(ylim)
+  plt.xlabel("time")
+  plt.ylabel("semivariance")
+  plt.show()
+  plt.gcf().clear()
+
+lag="ct"
+sc="sc01"
+lower=numpy.loadtxt("/home/derek/critTrans/Mar17/observationalData/" + sc + "/" + lag + "_0.1_r1_c1.tss.txt")
+higher=numpy.loadtxt("/home/derek/critTrans/Mar17/observationalData/" + sc + "/" + lag + "_0.9_r1_c1.tss.txt")
+median=numpy.loadtxt("/home/derek/critTrans/Mar17/observationalData/" + sc + "/" + lag + "_0.5_r1_c1.tss.txt")
+timeseries=numpy.loadtxt("/home/derek/critTrans/Mar17/spatialModelImplicit/dataSet1/" + lag + "_r1_c1.tss.txt")
+plotConfidenceIntervalTss(lower,higher,median,timeseries,[],[0,0.1])

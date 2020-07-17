@@ -1,0 +1,217 @@
+Changelog and remarks
+
+To do:
+- copy models/pyhydroCalibration to lisa
+- change sara.sh (upper lines)
+
+## 21 March 2013
+
+Create scenarios in pyhydroScenarios
+
+Swaps:
+
+swapAll:
+ alles op True
+
+swapVeg:
+ ** Op true:
+ leafAreaIndex=generalfunctions.swapValuesOfTwoRegions(areas,leafAreaIndex,True)
+ albedo=generalfunctions.swapValuesOfTwoRegions(areas,albedo,True)
+ maxStomatalConductance=generalfunctions.swapValuesOfTwoRegions(areas,maxStomatalConductance,True)
+ vegetationHeight=generalfunctions.swapValuesOfTwoRegions(areas,vegetationHeight,True)
+
+ ** Op false
+ regolithThicknessHomogeneous=generalfunctions.swapValuesOfTwoRegions(areas,regolithThicknessHomogeneous,False)
+ initialSoilMoistureFractionFromDisk=generalfunctions.swapValuesOfTwoRegions(areas,initialSoilMoistureFractionFromDisk,False)
+ soilPorosityFraction=generalfunctions.swapValuesOfTwoRegions(areas,soilPorosityFraction,False)
+ limitingPointFraction=generalfunctions.swapValuesOfTwoRegions(areas,limitingPointFraction,False)
+ mergeWiltingPointFractionFS=generalfunctions.swapValuesOfTwoRegions(areas,mergeWiltingPointFractionFS,False)
+ fieldCapacityFraction=generalfunctions.swapValuesOfTwoRegions(areas,fieldCapacityFraction,False)
+
+
+
+## 18 Februari 2013
+
+Copied two new input maps from Noemi's directory
+
+We asssume that incoming radiation is everywhere the same, except for shaded areas, there it is zero. To
+allow for this I added shaded to the shading module, and this is used in main.py.
+
+In Penman we import now LAI, as this is needed for the evapotranspiration calculation.
+
+NOTE!!! For calibration we want two different timeseries for the two catchments. For the scenarios
+we want the other one (one time series for both)! So this should be changed, then.
+
+
+
+## 21 January 2010
+
+Included evapotranspiration in main.py script
+Corrected the units of the returned evapotranspiration in the evapotranspiration class (see bottom).
+Included shading effect
+
+## 2 April 2010
+
+Included the timeseries files (main.py)
+Replaced the interception module with the interceptionuptomaxstore module
+Rewrote some minor things in main.py, particularly to prepare for map inputs
+Wrote budgets for all components, see component classes and bottom of main.py, budgets
+  not yet 100% fine it seems. need to compare with subsurf module alone
+
+## 4 April 2010
+
+added fractionReceivedFlatSurface to shading.py and included this in main.py
+to correct for solar angle in incoming shortwave radiation
+
+included incomingShortwaveRadiationAtSurface to account for effect of topography on incoming
+radiation (main.py)
+
+## 6 April 2010
+
+changed in main.py how evapotranspiration is dealt with: it takes it now first from the
+
+interception store and the remainder from the subsurface store (if available)
+
+extended the dem in the horizontan calculation (shading.py) else you get mv's at the edge
+
+added more structured reports (see below)
+
+## 9 April 2010
+
+Added method to calculate clear sky solar radiation to penman module.
+Modified main.py to deal with this change (how penman function is called).
+Changed albedo input in penman module (is fixed over time).
+
+Added the soil moisture reduction function to the subsurface module.
+penman.py reads this and uses it to modify the conductance
+
+Added new static map inputs to the penman module.
+
+Added a major optimization scheme in shading.py to speed up run time. Horizontan
+is precalculated for all angles and afterwards used each time step. This results in
+a somewhat longer time to get the model started, but afterwards it is 5 times faster or so (per
+timestep).
+
+Changed names of reports in shading.py.
+
+## 7 Feb 2010
+
+Included gap fraction in interception module and tested it.
+
+Added stuff for particle filtering.
+
+Included calculation of reg. thickness:
+  - need to check slope calculation
+
+Changed evapotranspiration module regarding canopy evap:
+  - module itself reports evapo with and without resistance
+    check whether also aerodynamic roughness needs to be changed
+  - main script calculates fraction of soil evapo based upon
+    canopy evapo
+
+Changed evapotranspiration module regarding zero evapo during rainfall
+  - additional input
+  - used at bottom of evapotranspiration module
+
+## 3 May 2012
+
+Added a class in randomparameters.py to store the random parameters (the ones that are
+calibrated). It writes the values over time, and the final value with .map extension.
+By setting readDistributionOfParametersFromDisk=True or False it either generates random
+maps or reads them from the folder indicated.
+
+Added statements to select either random parameter values (for calibration) or to read the
+parameter values from disk.
+
+Added statements to swap properties of the two catchments.
+
+
+# User manual
+
+To run the model you need to copy the contents of the included pysolar.zip to the current
+directory.
+
+Use rosetta software to estimate values
+
+
+## To do's:
+
+Noemi:
+
+Check new version of Penman module, in particular the radiation, I added reports that store these
+outputs calculated by the module.
+
+Run THIS model (no new inputs), and check the outputs on budgets etc. Change parameters such
+that certain stores are on/off, and see whether fluxes and changes in stores are correct at
+a given rainfall input.
+
+Potential evapotranspiration flux returned from the Penman equation (evapotranspirationpenman.py)
+  is sometimes negative (see pef0* maps). This is strange. Find out cause. It most likely
+  occurs only when incoming short wave radiation is zero. Currently solved by
+  potentialEvapotranspirationFluxNoNegativeValues=max(0.0,potentialEvapotranspirationFlux) (main.py).
+
+Reduction factor soil moisture, is this beta i (Eq. 8.40, van der Kwast, thesis) or is this
+  rs (Eq. 8.14, van der Kwast, thesis)? In the Word doc of Noemi it is proposed to use 8.14, however
+  I am almost sure Hans really uses 8.40 to represent 'shortage' of water resulting in reduced
+  evapotranspiration
+
+enter correct start time in days hours.
+
+enter correct location coordinates.
+
+Derek:
+
+Budget needs further attention.
+Timeseries output we probably want. Use existing map converts or write new one.
+Surface store, concept is a bit different from other stores
+
+no evapotranspiration during rain??? Note that there are clouds anyway during rain.
+
+albedo to init of penman
+more inputs to penman
+
+what about bare soil evapotranspiration??
+  penman: extra input wet /dry canopy
+     if wet: resistance is zero
+     else:calculate resistance:
+          get map with max r values
+            linear function between wilting point and limiting point, note that limiting point
+               is between wilting point and field capacity 
+          in this map bare soil has zero r value ????
+
+green and ampt infiltration
+  store remains full (no emptying of cumulative infiltration over time!!!)
+
+
+Choose inputs that are random
+- parameters
+- inputs (eg precipitation?)
+
+Modify options for reports
+- all
+- subset
+- only for calibration..
+- intervals
+
+Random inputs selection
+  Create random values with flag either random or mean, 
+  with additional mean argument, and
+  mean argument also used for reading maps from realizations
+
+Select timesteps for filtering
+ - fixed interval plus
+ - days with rain
+ - and days after days with rain (?)
+ OR
+ - fixed interval
+ - each time step when Q is above threshold..
+
+Create script to merge maps
+           
+
+## remarkts concerning the data preparation
+
+We probably need very low (or zero) infiltration in main streams. Ie either Green and Ampt
+ksat zero or zero soil depth.
+
+

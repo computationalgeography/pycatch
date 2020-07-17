@@ -1,0 +1,29 @@
+Metadata-Version: 1.0
+Name: dbfpy
+Version: 2.2.4
+Summary: Access .DBF (dBase) files from python
+Home-page: http://dbfpy.sourceforge.net/
+Author: Jeff Kunce
+Author-email: dbfpy-users@lists.sourceforge.net
+License: public domain
+Download-URL: http://sourceforge.net/project/showfiles.php?group_id=140566
+Description: dbfpy is a python-only module for reading and writing DBF-files.
+        It was created by Jeff Kunce and then modified by Hans Fiby
+        and Yaroslav Samchuk.
+        
+        dbfpy can read and write simple DBF-files.  The `DBF-format
+        <http://www.clicketyclick.dk/databases/xbase/format/>`_
+        was developed about 30 years ago and was used by a number
+        of simple database applications (dBase, Foxpro, Clipper, ...).
+        The basic datatypes numbers, short text, and dates are available.
+        Many different extensions have been used; dbfpy can read and write
+        only simple DBF-files.
+        
+Platform: OS Independent
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: Public Domain
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Database
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

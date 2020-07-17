@@ -1,0 +1,32 @@
+Forking problem 8 februari 2012
+----------------------------------
+
+This folder contains my own originals.
+../pcrasterPythonModulesFromNoemi contains my older originals with some minor changes of
+Noemi in it, including some by me to add member vars for filter updates. That folder should not be used
+but only considered as old backup in case changes are needed that were made there.
+
+Below I have made a list of stuff copied from Noemi, to update this source dir
+
+
+
+Copies from Noemi, 8 februari 2012
+-------------------------------------
+
+ old versions renamed as .py.old
+
+evapotranspirationpenman.py
+ gecopieerd, wordt niet door pygeom gebruikt
+
+
+Kept the same (not copied)
+-----------------------------
+
+subsurfacewateronelayer.py
+interceptionuptomaxstore.py (heb ik zaken aan toegevoegd voor pygeom)
+runoffaccuthreshold.py
+surfacestore.py
+shading.py
+infiltrationgreenandampt.py
+baselevel.py (no changes at all)
+

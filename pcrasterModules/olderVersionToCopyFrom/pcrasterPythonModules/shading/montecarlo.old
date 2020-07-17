@@ -1,0 +1,37 @@
+from PCRaster.Framework import * 
+from PCRaster import *
+from datetime import *
+import datetimePCRasterPython
+import shadingPCRasterPython
+
+# all time UTC
+
+class ShadingModel(object):
+  def __init__(self):
+    pass
+
+  def premcloop(self):
+    self.d_dateTimePCRasterPython=datetimePCRasterPython.DatetimePCRasterPython(datetime(2009,7,27),timedelta(0,0,0,0,0,0.1,0))
+    self.d_shadingPCRasterPython=shadingPCRasterPython.ShadingPCRasterPython(scalar('mdtpaz4.map'),52.1283333333333 , 5.19861111111111)
+
+  def initial(self):
+    self.totalFraction=scalar(0)
+
+  def dynamic(self):
+    print self.currentTimeStep()
+    self.d_dateTimePCRasterPython.update()
+    self.d_dateTimePCRasterPython.printit()
+    timeDatetimeFormat=self.d_dateTimePCRasterPython.getTimeDatetimeFormat()
+    solarCritAngle,shaded,fractionReceived=self.d_shadingPCRasterPython.update(timeDatetimeFormat)
+    self.totalFraction=self.totalFraction+fractionReceived
+    #self.report(shaded,'shaded')
+    self.report(fractionReceived,'fr')
+    self.d_shadingPCRasterPython.printit()
+
+  def postmcloop(self):
+    self.report(self.totalFraction,'total')
+
+myModel = ShadingModel()
+dynamicModel = DynamicFramework(myModel, 30*24)
+mcModel = MonteCarloFramework(dynamicModel, 1)
+mcModel.run()

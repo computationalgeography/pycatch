@@ -1,0 +1,97 @@
+# equations for the potential evapotranspiration Penman-Monteith
+# based on the Thesis of van der Kwast, 2009
+# fixed scenario: the whole catchment cover with 2m shrubs, around mid day, in a cool/slightly humid day
+
+# net radiation module
+# here with fixed input values for airTemp (C), relHumidity (-), aShortRadiation (W m-2), pShortRadiation (W m-2), albedo (-)
+
+# constants
+ST=5.67*10**-8.0;  # Stephan-Boltzman constant (W m-2 K-4)
+
+# eq 8.18 saturated vapour pressure (Pa), Allen et al 1998
+anInput=if(clone.map,20.0);
+airTemp=20.0;
+sVapourPress=611.0*exp((17.27*airTemp)/(237.3+airTemp));
+
+# eq 8.17 actual vapour pressure (Pa)
+relHumidity=0.6;
+aVapourPress=relHumidity*sVapourPress;
+
+# eq 8.19 cloud factor (-)
+aShortRadiation=600.0;  # incoming shortwave radiation measured at the meteo station
+pShortRadiation=600.0; 	# potential incoming shortwave radiation should be calculated  with POTRAD
+cloudFactor=aShortRadiation/pShortRadiation;
+
+# eq 8.20 potential longwave radiation (W m-2), using Stefan-Boltzmann ST
+pLongRadiation=ST*(airTemp+273.15)**4.0;
+
+# eq 8.16 net long wave radiation (W m-2), Feddes et al 1983
+netLongRadiation=pLongRadiation*(0.56-0.008*sqrt(aVapourPress))*(0.1+0.9*cloudFactor);
+
+# eq 8.15 net radiation (W m-2)
+albedo=0.3;
+netRadiation=aShortRadiation*(1.0-albedo)-netLongRadiation;
+
+# aerodynamic resistance module
+# here with fixed input values for vegHeight (m), mesoWindHeight (m), windVelocity (m s-1), meteoVegHeight (m), meteoWindHeight (m)
+
+# constants
+KAR=0.41;          # von Karman constant
+
+# eq 8.22 displacement height (m), Rutter 1975
+vegHeight=2.0;
+displaHeight=0.75*vegHeight;
+
+# eq 8.23 aerodynamic roughness (m), Rutter 1975
+aerodynamicRough=0.1*vegHeight;
+
+# eq 8.24 wind extrapolator factor (-) for vegHeight>10
+mesoWindHeight=10.0; 			# height of mesotropic wind (m)
+meteoVegHeight=0.1;				# height of vegetation at meteo station (m)				
+meteoDisplaHeight=0.75*meteoVegHeight; 	
+meteoAerodynamicRough=0.1*meteoVegHeight; 	
+meteoWindHeight=3.0;			# wind measurement height (m)
+windExtraFactor=if(vegHeight<mesoWindHeight then 1 else (ln((mesoWindHeight-meteoDisplaHeight)/meteoAerodynamicRough))/(ln((meteoWindHeight-meteoDisplaHeight)/meteoAerodynamicRough)));
+
+# eq 8.21 aerodynamic resistance (s m-1), using Von Karman constant KAR
+windVelocity=2.0;
+aerodynamicRes=ln(((mesoWindHeight-displaHeight)/aerodynamicRough)**2)/(KAR**2*windVelocity*windExtraFactor);
+
+
+# stomatal resistance module, simplified version (see Brolsma et al)
+# here with fixed inputs values for maxStomatalConduc (m s-1), fWaterPotential (-)
+
+# stomatal conductance (m s-1)
+maxStomatalConduc=0.04;		# Breuer et al 2003
+fWaterPotential=1	;		# here we assume soils are at the "limiting point" (pF=2.7), when conductance starts to decline (Jarvis, 1976/Brolsma et al). Will need to calculate van Genuchten?
+stomatalConduc=maxStomatalConduc*fWaterPotential;
+
+# stomatal resistance (s m-1)
+stomatalRes=1/stomatalConduc;
+
+
+# other variables
+# here with fixed input values for Press (Pa)
+
+# contants
+airHeat=1013.0; 		# air specific heat at constant pressure (J kg-1  K-1)
+latentHeat=2450000.0;	# latent heat of water vaporization (J kg-1) from FAO56 Annex3
+
+# eq 8.29 vapour pressure deficit (Pa)
+defiVapourPress=sVapourPress-aVapourPress;
+
+# eq 8.31 slope of saturation vapour pressure temperature relationship (Pa K-1) I didn't included 1/274.15 in Hans
+slopePressTemp=((4098.0*sVapourPress)/(237.3+airTemp)**2);
+
+# eq 8.33 psychrometric constant (Pa K-1), FAO56 eq 8 (Brunt, 1956 see Annex3)
+Press=88400.0;		# air pressure at z=1150 m (FAO56)
+psychrConstant=0.665*10**-3*Press;
+
+# final equation for potential evapotranspiration
+
+# contants
+airDens=1.2047;		# mean air density (kg m-3)
+
+# eq 8.14 potential evapotranspiration (m s-1), Monteith, 1981 (or 1965?)
+report pEvapt=(1.0/latentHeat)*(((netRadiation*slopePressTemp)+(airDens*airHeat*defiVapourPress/aerodynamicRes))/(slopePressTemp+psychrConstant*(1.0+stomatalRes/aerodynamicRes)));
+report pEvaptMH=pEvapt*3600;
