@@ -1,5 +1,5 @@
 User manual
-==============
+=============
 
 Copyright of this software: Derek Karssenberg & Noemi Lana-Renault Monreal
 Contact: d.karssenberg@uu.nl or noemi-solange.lana-renault@unirioja.es 
