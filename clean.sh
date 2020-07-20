@@ -5,3 +5,4 @@ rm observations/* filterRR*csv filterSIR*csv
 for((i = 1; i <= 5000; ++i)); do rm -rf ${i}; done
 rm -rf __pycache__
 rm -rf pcrasterModules/*.pyc
+rm -rf pcrasterModules/__pycache__

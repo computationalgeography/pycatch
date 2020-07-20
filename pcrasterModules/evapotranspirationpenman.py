@@ -16,8 +16,6 @@ import component
 # equations for the potential evapotranspiration Penman-Monteith
 # based on the Thesis of van der Kwast, 2009. Otherwise it is indicated.
 
-setclone('clone.map')
-
 ['airTemperature', 'albedo', 'clearSkyIncomingShortwaveRadiationFlatSurface', 'cloudFactor', 'elevationAboveSeaLevelOfMeteoStation', 'evapotranspirationOccurs', 'fWaterPotential', 'fractionReceivedFlatSurface', 'incomingShortwaveRadiation', 'incomingShortwaveRadiationFlatSurface', 'maxStomatalConduc', 'potentialEvapotranspirationAmount', 'potentialEvapotranspirationFlux', 'potentialEvapotranspirationFromCanopyAmount', 'potentialEvapotranspirationFromCanopyFlux', 'relativeHumidity', 'setOfVariablesToReport', 'timeStepDuration', 'timeStepsToReport', 'variablesToReport', 'vegHeight', 'windVelocityNotZero']
 
 class EvapotranspirationPenman(component.Component):
@@ -48,7 +46,7 @@ class EvapotranspirationPenman(component.Component):
     # real inits
     # maxStomatalConduc: maximum stomatal conductance (m s-1), appr. 0.04 m/s
     # vegetationHeight: height of vegetation, m
-    self.timeStepDuration=scalar(timeStepDuration)
+    self.timeStepDuration=timeStepDuration
     self.albedo=scalar(albedo)
     self.maxStomatalConduc=maxStomatalConductance
     self.vegHeight=vegetationHeight
@@ -247,7 +245,7 @@ class EvapotranspirationPenman(component.Component):
            self.potentialEvapotranspirationFromCanopyFlux, self.potentialEvapotranspirationFromCanopyAmount
 
 ## test
-setclone('mergeClone.map')
+#setclone('mergeClone.map')
 timeStepDuration=scalar(1)
 albedo=scalar(0.15)
 maxStomatalConductance=0.0053

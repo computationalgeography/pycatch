@@ -29,7 +29,7 @@ import generalfunctions, component
 #   set self.soilMoistureThick to self.soilPorosityThick
 
 
-setclone('clone.map')
+#setclone('inputs/clone.map')
 
 class SubsurfaceWaterOneLayer(component.Component):
   def __init__(self,
@@ -96,7 +96,7 @@ class SubsurfaceWaterOneLayer(component.Component):
 
     # values independent of regolith thickness 
     self.saturatedConductivityMetrePerDay=saturatedConductivityMetrePerDay
-    self.timeStepDuration=scalar(timeStepDuration)
+    self.timeStepDuration=timeStepDuration
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
 

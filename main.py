@@ -5,8 +5,20 @@ import random
 import glob
 import sys
 
+# PCRaster itself
+from pcraster import *
+from pcraster.framework import *
+
 # add path to modules required
 sys.path.append("./pcrasterModules/")
+
+# folder with input files (maps, timeseries)
+inputFolder="inputs/"
+
+# set clone
+cloneString=inputFolder + "mergeClone.map"
+setclone(cloneString)
+
 
 # from pcrasterModules
 import datetimePCRasterPython
@@ -23,11 +35,6 @@ import generalfunctions
 # from this folder
 import exchangevariables
 import randomparameters
-
-# PCRaster itself
-from pcraster import *
-from pcraster.framework import *
-
 
 # define number of hourly timesteps to run
 numberOfTimeSteps = 10968
@@ -96,13 +103,12 @@ setOfVariablesToReport = 'full'
 
 # general ########
 
-cloneString="mergeClone.map"
-dem=scalar('mergeDem.map')
+dem=scalar(inputFolder + 'mergeDem.map')
 # report locations, i.e. outflow points, for instance, at the outlet
-locations=nominal('mergeOutFlowsNominal.map')
+locations=nominal(inputFolder + 'mergeOutFlowsNominal.map')
 # map with forest or no forest, only used when swapCatchments is True 
-forestNoForest=boolean('mergeForestNoForest.map') 
-areas='mergeForestNoForest.map'
+forestNoForest=boolean(inputFolder + 'mergeForestNoForest.map') 
+areas=inputFolder + 'mergeForestNoForest.map'
 
 # real time of first time step, duration of time step
 # IMPORTANT NOTE: THIS IS NOW UTC TIME ALMOST CERTAINLY AT LEAST FOR SHADING
@@ -115,14 +121,14 @@ timeStepDurationHoursFloatingPointValue=1.0  # only tested for one hour!!!!
 # meteorology #######
 
 # observed precipitation
-rainfallFluxDetermTimeSeries="rainfallFluxTwoCatchsJulAugSep0506.tss"
+rainfallFluxDetermTimeSeries=inputFolder + "rainfallFluxTwoCatchsJulAugSep0506.tss"
 # areas linked to rainfallFluxDetermTimeSeries
-rainfallFluxDetermTimeSeriesAreas=nominal("mergeArnasSansaNominal.map")
+rainfallFluxDetermTimeSeriesAreas=nominal(inputFolder + "mergeArnasSansaNominal.map")
 
-airTemperatureDetermString="airTemperatureArnaJulAugSep0506.tss"
-relativeHumidityDetermString="relativeHumidityArnasJulAugSep0506.tss"
-incomingShortwaveRadiationFlatSurfaceString="incomingShortwaveRadiationArnasJulAugSep0506.tss"
-windVelocityDetermString="windVelocityArnasJulAugSep0506.tss"
+airTemperatureDetermString=inputFolder + "airTemperatureArnaJulAugSep0506.tss"
+relativeHumidityDetermString=inputFolder + "relativeHumidityArnasJulAugSep0506.tss"
+incomingShortwaveRadiationFlatSurfaceString=inputFolder + "incomingShortwaveRadiationArnasJulAugSep0506.tss"
+windVelocityDetermString=inputFolder + "windVelocityArnasJulAugSep0506.tss"
 elevationAboveSeaLevelOfMeteoStationValue=900.0
 
 # lat long for shading (solar radiation)
@@ -134,7 +140,7 @@ timeZone="Europe/Madrid"
 # interception #######
 
 maximumInterceptionCapacityValue=scalar(0.0002)
-leafAreaIndexValue=scalar("mergeVegLAIFS.map")
+leafAreaIndexValue=scalar(inputFolder + "mergeVegLAIFS.map")
 
 # surface storage ######
 
@@ -144,8 +150,8 @@ maxSurfaceStoreValue=scalar(0.001)
 
 # green and ampt
 ksatValue=scalar(0.0163)
-initialSoilMoistureFractionFromDiskValue=scalar("mergeFieldCapacityFractionFS.map")
-soilPorosityFractionValue=scalar("mergePorosityFractionFS.map")
+initialSoilMoistureFractionFromDiskValue=scalar(inputFolder + "mergeFieldCapacityFractionFS.map")
+soilPorosityFractionValue=scalar(inputFolder + "mergePorosityFractionFS.map")
 
 
 # regolith geometry ########
@@ -153,30 +159,30 @@ soilPorosityFractionValue=scalar("mergePorosityFractionFS.map")
 regolithThicknessHomogeneousValue=scalar(0.5)
 
 # location of the stream, used to adjust regolith thickness there
-streamValue=boolean('mergeStream.map')
+streamValue=boolean(inputFolder + 'mergeStream.map')
 
 
 # 'groundwater' (saturated flow) ##########
 
 saturatedConductivityMetrePerDayValue=scalar(37.0)
 
-limitingPointFractionValue=scalar("mergeLimitingPointFractionFS.map")
-mergeWiltingPointFractionFSValue=scalar("mergeWiltingPointFractionFS.map")
-fieldCapacityFractionValue=scalar("mergeFieldCapacityFractionFS.map")
+limitingPointFractionValue=scalar(inputFolder + "mergeLimitingPointFractionFS.map")
+mergeWiltingPointFractionFSValue=scalar(inputFolder + "mergeWiltingPointFractionFS.map")
+fieldCapacityFractionValue=scalar(inputFolder + "mergeFieldCapacityFractionFS.map")
 
 # evapotranspiration ###########
 
 # penman
 multiplierMaxStomatalConductanceValue=scalar(1.0)
-albedoValue=scalar("mergeVegAlbedoFS.map")
-maxStomatalConductanceValue=scalar("mergeVegStomatalFS.map")
-vegetationHeightValue=scalar("mergeVegHeightFS.map")
+albedoValue=scalar(inputFolder + "mergeVegAlbedoFS.map")
+maxStomatalConductanceValue=scalar(inputFolder + "mergeVegStomatalFS.map")
+vegetationHeightValue=scalar(inputFolder + "mergeVegHeightFS.map")
 
 
 
 # dem geometry ###########
 
-lddMap='mergeldd.map'
+lddMap=inputFolder + 'mergeldd.map'
 
 
 
