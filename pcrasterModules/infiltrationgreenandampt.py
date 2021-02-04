@@ -1,6 +1,6 @@
-from pcraster import * 
 import sys
-from pcraster.framework import *
+import pcraster as pcr
+import pcraster.framework as pcrfw
 import component
 
 # notes
@@ -16,33 +16,33 @@ import component
 
 class InfiltrationGreenAndAmpt(component.Component):
   def __init__(self, porosityFraction, initialMoistureContentFraction, saturatedConductivityFlux, 
-               suctionHead, timeStepDuration,timeStepsToReport,setOfVariablesToReport):
+               suctionHead, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
 
     # init only for suspend and resume in filter
-    self.potentialInfiltrationFlux=scalar(0)
-    self.potentialInfiltrationFluxMetrePerTimeStep=scalar(0)
-    self.variablesToReport={}
+    self.potentialInfiltrationFlux = pcr.scalar(0)
+    self.potentialInfiltrationFluxMetrePerTimeStep = pcr.scalar(0)
+    self.variablesToReport = {}
 
     # real inits
-    self.porosityFraction=scalar(porosityFraction)
-    self.initialMoistureContentFraction=scalar(initialMoistureContentFraction)
-    self.timeStepDuration=scalar(timeStepDuration)
-    self.saturatedConductivityFlux=saturatedConductivityFlux
-    self.saturatedConductivityMetrePerTimeStep=scalar(self.saturatedConductivityFlux)*self.timeStepDuration
-    self.suctionHead=scalar(suctionHead) # negative
-    self.availablePoreSpace=self.porosityFraction-self.initialMoistureContentFraction
-    self.verySmallValue=scalar(0.0000000000000000000001)
-    self.actualInfiltrationFlux=self.verySmallValue
-    self.store=self.verySmallValue  # i.e., cumulative infiltration
+    self.porosityFraction = pcr.scalar(porosityFraction)
+    self.initialMoistureContentFraction = pcr.scalar(initialMoistureContentFraction)
+    self.timeStepDuration = pcr.scalar(timeStepDuration)
+    self.saturatedConductivityFlux = saturatedConductivityFlux
+    self.saturatedConductivityMetrePerTimeStep = pcr.scalar(self.saturatedConductivityFlux) * self.timeStepDuration
+    self.suctionHead = pcr.scalar(suctionHead) # negative
+    self.availablePoreSpace = self.porosityFraction - self.initialMoistureContentFraction
+    self.verySmallValue = pcr.scalar(0.0000000000000000000001)
+    self.actualInfiltrationFlux = self.verySmallValue
+    self.store = self.verySmallValue  # i.e., cumulative infiltration
 
-    self.timeStepsToReport=timeStepsToReport
-    self.setOfVariablesToReport=setOfVariablesToReport
+    self.timeStepsToReport = timeStepsToReport
+    self.setOfVariablesToReport = setOfVariablesToReport
 
     # budget check
-    self.initialStore=scalar(0.0)
-    self.actualAdditionCum=scalar(0.0)
+    self.initialStore = pcr.scalar(0.0)
+    self.actualAdditionCum = pcr.scalar(0.0)
 
-  def reportAsMaps(self,sample,timestep):
+  def reportAsMaps(self, sample, timestep):
     # reports
     self.variablesToReport = {}
     if self.setOfVariablesToReport == 'full':
@@ -54,43 +54,43 @@ class InfiltrationGreenAndAmpt(component.Component):
                                  }
     if self.setOfVariablesToReport == 'filtering':
       self.variablesToReport = { }
-    self.reportMaps(sample,timestep)
+    self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
     self.variablesAsNumpyToReport = {
                                     }
 
-  def reportAsNumpyOneFile(self,locations,sample,timestep,endTimeStep):
+  def reportAsNumpyOneFile(self, locations, sample, timestep, endTimeStep):
     self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpyOneFilePerRealization(locations,sample,timestep,endTimeStep)
+    self.reportAsNumpyOneFilePerRealization(locations, sample, timestep, endTimeStep)
 
-  def reportAsNumpyMultipleFiles(self,locations,sample,timestep):
+  def reportAsNumpyMultipleFiles(self, locations, sample, timestep):
     self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpy(locations,sample,timestep)
+    self.reportAsNumpy(locations, sample, timestep)
 
 
-  def amountToFlux(self,amount):
-    flux=amount/self.timeStepDuration
+  def amountToFlux(self, amount):
+    flux = amount / self.timeStepDuration
     return flux
 
-  def fluxToAmount(self,flux):
-    amount=flux * self.timeStepDuration
+  def fluxToAmount(self, flux):
+    amount = flux * self.timeStepDuration
     return amount
 
   def potentialInfiltrationFluxFunction(self):
     # potential infiltration per timestep ('rate', m/timestep)
     self.potentialInfiltrationFluxMetrePerTimeStep = \
-         scalar( \
-         self.saturatedConductivityMetrePerTimeStep * \
-         ( ((scalar(0.0)-self.suctionHead)*self.availablePoreSpace+self.store) /  \
+         pcr.scalar(
+         self.saturatedConductivityMetrePerTimeStep *
+         ( ((pcr.scalar(0.0) - self.suctionHead) * self.availablePoreSpace + self.store) /
          self.store ))
-    self.potentialInfiltrationFlux=self.potentialInfiltrationFluxMetrePerTimeStep/self.timeStepDuration
+    self.potentialInfiltrationFlux = self.potentialInfiltrationFluxMetrePerTimeStep / self.timeStepDuration
     return self.potentialInfiltrationFlux
 
 
-  def update(self,availableForInfiltrationFlux):
-    self.actualInfiltrationFlux=min(availableForInfiltrationFlux,self.potentialInfiltrationFlux)
-    self.store=self.store+self.fluxToAmount(self.actualInfiltrationFlux)
+  def update(self, availableForInfiltrationFlux):
+    self.actualInfiltrationFlux = pcr.min(availableForInfiltrationFlux, self.potentialInfiltrationFlux)
+    self.store = self.store + self.fluxToAmount(self.actualInfiltrationFlux)
     return self.actualInfiltrationFlux
 
   def printit(self, row, column):
@@ -100,8 +100,8 @@ class InfiltrationGreenAndAmpt(component.Component):
     # NOTE this is only valid if addition,subtraction are invoked ONCE EACH TIME STEP
     # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be 
     # comparable with other budgets.
-    self.actualAdditionCum=scalar(self.actualAdditionCum+self.actualInfiltrationFlux*self.timeStepDuration)
-    self.increaseInStore=self.store-self.initialStore
-    budget=maptotal(self.actualAdditionCum-self.increaseInStore)
-    report(budget,generateNameST('B-inf', sample, timestep))
+    self.actualAdditionCum = pcr.scalar(self.actualAdditionCum + self.actualInfiltrationFlux * self.timeStepDuration)
+    self.increaseInStore = self.store - self.initialStore
+    budget = pcr.maptotal(self.actualAdditionCum - self.increaseInStore)
+    pcr.report(budget, pcrfw.generateNameST('B-inf', sample, timestep))
     return self.increaseInStore

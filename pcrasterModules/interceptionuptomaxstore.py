@@ -1,5 +1,5 @@
-from pcraster import *
-from pcraster.framework import *
+import pcraster as pcr
+import pcraster.framework as pcrfw
 import component
 
 # notes
@@ -13,31 +13,31 @@ import component
 # functions are always PCRaster types
 
 class InterceptionUpToMaxStore(component.Component):
-  def __init__(self, ldd, initialStore, maximumStore, gapFraction, timeStepDuration,timeStepsToReport,setOfVariablesToReport):
+  def __init__(self, ldd, initialStore, maximumStore, gapFraction, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
 
     # init only to run supsend and resume in filtering
-    self.variablesToReport={}
-    self.variablesAsNumpyToReport={}
+    self.variablesToReport = {}
+    self.variablesAsNumpyToReport = {}
 
     # real inits
-    self.ldd=ldd
-    self.maximumStore=scalar(maximumStore)  # maximum storage over whole cell (not just 1-gapFraction)
-    self.gapFraction=scalar(gapFraction)
-    self.initialStore=scalar(initialStore)
-    self.store=scalar(self.initialStore)
-    self.timeStepDuration=scalar(timeStepDuration)
-    self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour=scalar(0)
+    self.ldd = ldd
+    self.maximumStore = pcr.scalar(maximumStore)  # maximum storage over whole cell (not just 1-gapFraction)
+    self.gapFraction = pcr.scalar(gapFraction)
+    self.initialStore = pcr.scalar(initialStore)
+    self.store = pcr.scalar(self.initialStore)
+    self.timeStepDuration = pcr.scalar(timeStepDuration)
+    self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour = pcr.scalar(0)
 
     # budget checks
-    self.actualAdditionFlux=scalar(0.0)
-    self.actualAbstractionFlux=scalar(0.0)
-    self.actualAdditionCum=scalar(0.0)
-    self.actualAbstractionCum=scalar(0.0)
-    self.timeStepsToReport=timeStepsToReport
-    self.setOfVariablesToReport=setOfVariablesToReport
+    self.actualAdditionFlux = pcr.scalar(0.0)
+    self.actualAbstractionFlux = pcr.scalar(0.0)
+    self.actualAdditionCum = pcr.scalar(0.0)
+    self.actualAbstractionCum = pcr.scalar(0.0)
+    self.timeStepsToReport = timeStepsToReport
+    self.setOfVariablesToReport = setOfVariablesToReport
 
 
-  def reportAsMaps(self,sample,timestep):
+  def reportAsMaps(self, sample, timestep):
     # reports
     self.variablesToReport = {}
     if self.setOfVariablesToReport == 'full':
@@ -51,72 +51,72 @@ class InterceptionUpToMaxStore(component.Component):
                                  }
     if self.setOfVariablesToReport == 'filtering':
       self.variablesToReport = { }
-    self.reportMaps(sample,timestep)
+    self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
     self.variablesAsNumpyToReport = {
                                 'Vot': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
                                     }
 
-  def reportAsNumpyOneFile(self,locations,sample,timestep,endTimeStep):
+  def reportAsNumpyOneFile(self, locations, sample, timestep, endTimeStep):
     self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpyOneFilePerRealization(locations,sample,timestep,endTimeStep)
+    self.reportAsNumpyOneFilePerRealization(locations, sample, timestep, endTimeStep)
 
-  def reportAsNumpyMultipleFiles(self,locations,sample,timestep):
+  def reportAsNumpyMultipleFiles(self, locations, sample, timestep):
     self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpy(locations,sample,timestep)
+    self.reportAsNumpy(locations, sample, timestep)
 
 
-  def fluxToAmount(self,flux):
-    fluxAmount=flux * self.timeStepDuration
+  def fluxToAmount(self, flux):
+    fluxAmount = flux * self.timeStepDuration
     return fluxAmount
 
-  def amountToFlux(self,amount):
-    flux=amount/self.timeStepDuration
+  def amountToFlux(self, amount):
+    flux = amount / self.timeStepDuration
     return flux
 
   def calculateMaximumAdditionAmount(self):
-    return max(0,self.maximumStore-self.store)
+    return pcr.max(0, self.maximumStore - self.store)
 
   def calculateMaximumAbstractionAmount(self):
-    return max(0,self.store-0.0)
+    return pcr.max(0, self.store - 0.0)
 
-  def gapFractionLoss(self,potentialAdditionFlux):
-    canopyFraction=1.0-self.gapFraction
-    potentialAdditionToCanopyFlux=potentialAdditionFlux*canopyFraction
+  def gapFractionLoss(self, potentialAdditionFlux):
+    canopyFraction = 1.0 - self.gapFraction
+    potentialAdditionToCanopyFlux = potentialAdditionFlux * canopyFraction
     return potentialAdditionToCanopyFlux
 
-  def addWater(self,potentialAdditionFlux):
-    potentialAdditionToCanopyFlux=self.gapFractionLoss(potentialAdditionFlux)
-    potentialAdditionAmount=self.fluxToAmount(potentialAdditionToCanopyFlux)
-    maximumAdditionAmount=self.calculateMaximumAdditionAmount()
-    actualAdditionAmount=min(potentialAdditionAmount,maximumAdditionAmount)
-    self.actualAdditionFlux=self.amountToFlux(actualAdditionAmount)
+  def addWater(self, potentialAdditionFlux):
+    potentialAdditionToCanopyFlux = self.gapFractionLoss(potentialAdditionFlux)
+    potentialAdditionAmount = self.fluxToAmount(potentialAdditionToCanopyFlux)
+    maximumAdditionAmount = self.calculateMaximumAdditionAmount()
+    actualAdditionAmount = pcr.min(potentialAdditionAmount, maximumAdditionAmount)
+    self.actualAdditionFlux = self.amountToFlux(actualAdditionAmount)
 
-    self.store=max(min(self.store+actualAdditionAmount,self.maximumStore),0)
+    self.store = pcr.max(pcr.min(self.store + actualAdditionAmount, self.maximumStore), 0)
     return self.actualAdditionFlux
 
-  def abstractWater(self,potentialAbstractionFlux):
-    potentialAbstractionAmount=self.fluxToAmount(potentialAbstractionFlux)
-    maximumAbstractionAmount=self.calculateMaximumAbstractionAmount()
-    actualAbstractionAmount=min(potentialAbstractionAmount,maximumAbstractionAmount)
-    self.actualAbstractionFlux=self.amountToFlux(actualAbstractionAmount)
+  def abstractWater(self, potentialAbstractionFlux):
+    potentialAbstractionAmount = self.fluxToAmount(potentialAbstractionFlux)
+    maximumAbstractionAmount = self.calculateMaximumAbstractionAmount()
+    actualAbstractionAmount = pcr.min(potentialAbstractionAmount, maximumAbstractionAmount)
+    self.actualAbstractionFlux = self.amountToFlux(actualAbstractionAmount)
 
     # for reporting
     self.totalActualAbstractionInUpstreamArea()
     
-    self.store=max(min(self.store-actualAbstractionAmount,self.maximumStore),0)
+    self.store = pcr.max(pcr.min(self.store - actualAbstractionAmount, self.maximumStore), 0)
     return self.actualAbstractionFlux
 
   def totalActualAbstractionInUpstreamArea(self):
-    self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour=accuflux(self.ldd, self.actualAbstractionFlux)*cellarea()
+    self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour = pcr.accuflux(self.ldd, self.actualAbstractionFlux) * pcr.cellarea()
 
-  def setGapFraction(self,gapFraction):
-    self.gapFraction=scalar(gapFraction)
+  def setGapFraction(self, gapFraction):
+    self.gapFraction = pcr.scalar(gapFraction)
 
-  def setMaximumStore(self,maximumStore):
-    self.maximumStore=scalar(maximumStore) 
-    self.store=min(self.store,self.maximumStore)
+  def setMaximumStore(self, maximumStore):
+    self.maximumStore = pcr.scalar(maximumStore) 
+    self.store = pcr.min(self.store, self.maximumStore)
 
 #  def printit(self, row, column):
 #    printCellValue(self, self.throughfallFlux, 'throughfall flux', 'm/h', row, column)
@@ -127,19 +127,19 @@ class InterceptionUpToMaxStore(component.Component):
     # NOTE this is only valid if addition,subtraction and lateral flow are invoked ONCE EACH TIME STEP
     # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be 
     # comparable with other budgets.
-    self.actualAdditionCum=self.actualAdditionCum+self.actualAdditionFlux*self.timeStepDuration
-    self.actualAbstractionCum=self.actualAbstractionCum+self.actualAbstractionFlux*self.timeStepDuration
-    self.increaseInStore=self.store-self.initialStore
-    #budget=catchmenttotal(self.actualAdditionCum-self.actualAbstractionCum-self.increaseInStore)
-    budget=maptotal(self.actualAdditionCum-self.actualAbstractionCum-self.increaseInStore)
-    report(budget,generateNameST('B-int', sample, timestep))
+    self.actualAdditionCum = self.actualAdditionCum + self.actualAdditionFlux * self.timeStepDuration
+    self.actualAbstractionCum = self.actualAbstractionCum + self.actualAbstractionFlux * self.timeStepDuration
+    self.increaseInStore = self.store - self.initialStore
+    # budget=catchmenttotal(self.actualAdditionCum-self.actualAbstractionCum-self.increaseInStore)
+    budget = pcr.maptotal(self.actualAdditionCum - self.actualAbstractionCum - self.increaseInStore)
+    pcr.report(budget, pcrfw.generateNameST('B-int', sample, timestep))
     return self.increaseInStore
 
-#setclone("clone.map")
-#d_interceptionuptomaxstore=InterceptionUpToMaxStore(0.1,0.9,0.5,1.0,'test','test')
-#jan=d_interceptionuptomaxstore.addWater(20.0)
-#report(jan,"jan")
-#report(d_interceptionuptomaxstore.store,"store1")
-#piet=d_interceptionuptomaxstore.abstractWater(0.01)
-#report(piet,"piet")
-#report(d_interceptionuptomaxstore.store,"store2")
+# setclone("clone.map")
+# d_interceptionuptomaxstore=InterceptionUpToMaxStore(0.1,0.9,0.5,1.0,'test','test')
+# jan=d_interceptionuptomaxstore.addWater(20.0)
+# report(jan,"jan")
+# report(d_interceptionuptomaxstore.store,"store1")
+# piet=d_interceptionuptomaxstore.abstractWater(0.01)
+# report(piet,"piet")
+# report(d_interceptionuptomaxstore.store,"store2")
