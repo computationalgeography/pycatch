@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-from pcraster import *
-from pcraster.framework import *
+import pcraster as pcr
 import component
 
 # notes
@@ -16,25 +14,25 @@ import component
 # also, the module has to update cumulative discharge by itself 
 
 class RunoffAccuthreshold(component.Component):
-  def __init__(self, ldd, timeStepDuration,timeStepsToReport,setOfVariablesToReport):
+  def __init__(self, ldd, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
 
     # init for supsend and resume in filtering
-    self.RunoffCubicMetrePerHour = scalar(0)
-    self.RunoffCubicMeterPerHourMovingAverage = scalar(0)
-    self.actualAbstractionFlux=scalar(0)
-    self.variablesToReport={}
-    self.variablesAsNumpyToReport={}
+    self.RunoffCubicMetrePerHour = pcr.scalar(0)
+    self.RunoffCubicMeterPerHourMovingAverage = pcr.scalar(0)
+    self.actualAbstractionFlux = pcr.scalar(0)
+    self.variablesToReport = {}
+    self.variablesAsNumpyToReport = {}
 
     # real init
-    self.ldd=ldd
-    self.timeStepDuration=scalar(timeStepDuration)
-    self.cellArea=cellarea()
-    self.cumulativeDischargeCubicMetres=scalar(0.0)
+    self.ldd = ldd
+    self.timeStepDuration = pcr.scalar(timeStepDuration)
+    self.cellArea = pcr.cellarea()
+    self.cumulativeDischargeCubicMetres = pcr.scalar(0.0)
 
-    self.timeStepsToReport=timeStepsToReport
-    self.setOfVariablesToReport=setOfVariablesToReport
+    self.timeStepsToReport = timeStepsToReport
+    self.setOfVariablesToReport = setOfVariablesToReport
  
-  def reportAsMaps(self,sample,timestep):
+  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = {}
     if self.setOfVariablesToReport == 'full':
       self.variablesToReport = {
@@ -45,7 +43,7 @@ class RunoffAccuthreshold(component.Component):
       self.variablesToReport = { 
                                 'Rq': self.RunoffCubicMetrePerHour,
                                   }
-    self.reportMaps(sample,timestep)
+    self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
     self.variablesAsNumpyToReport = {
@@ -53,63 +51,63 @@ class RunoffAccuthreshold(component.Component):
                                 'Rqs': self.RunoffCubicMeterPerHourMovingAverage
                                     }
 
-  def reportAsNumpyOneFile(self,locations,sample,timestep,endTimeStep):
+  def reportAsNumpyOneFile(self, locations, sample, timestep, endTimeStep):
     self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpyOneFilePerRealization(locations,sample,timestep,endTimeStep)
+    self.reportAsNumpyOneFilePerRealization(locations, sample, timestep, endTimeStep)
 
-  def reportAsNumpyMultipleFiles(self,locations,sample,timestep):
+  def reportAsNumpyMultipleFiles(self, locations, sample, timestep):
     self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpy(locations,sample,timestep)
+    self.reportAsNumpy(locations, sample, timestep)
 
 
 
 
-  def setSurfaceProperties(self,ldd):
-    self.ldd=ldd
+  def setSurfaceProperties(self, ldd):
+    self.ldd = ldd
 
-  def perHourToPerSecond(self,aScalar):
-    perSecond=aScalar/scalar(3600)
+  def perHourToPerSecond(self, aScalar):
+    perSecond = aScalar / pcr.scalar(3600)
     return perSecond
 
-  def perSecondToPerHour(self,aScalar):
-    perHour=aScalar*scalar(3600)
+  def perSecondToPerHour(self, aScalar):
+    perHour = aScalar * pcr.scalar(3600)
     return perHour
 
-  def perHourToPerTimeStep(self,aScalar):
-    perTimeStep=aScalar*self.timeStepDuration
+  def perHourToPerTimeStep(self, aScalar):
+    perTimeStep = aScalar * self.timeStepDuration
     return perTimeStep
 
-  def perSecondToPerTimeStep(self,aScalar):
-    perHour=self.perSecondToPerHour(aScalar)
-    perTimeStep=self.perHourToPerTimeStep(perHour)
+  def perSecondToPerTimeStep(self, aScalar):
+    perHour = self.perSecondToPerHour(aScalar)
+    perTimeStep = self.perHourToPerTimeStep(perHour)
     return perTimeStep
 
   def updateCumulativeDischarge(self):
-    self.cumulativeDischargeCubicMetres=self.cumulativeDischargeCubicMetres + \
+    self.cumulativeDischargeCubicMetres = self.cumulativeDischargeCubicMetres + \
                                         self.perHourToPerTimeStep(self.RunoffCubicMetrePerHour)
 
-  def update(self,rainFlux,potentialAbstractionFlux):
+  def update(self, rainFlux, potentialAbstractionFlux):
     # moving average calculation
-    runoffPreviousTimeStep=self.RunoffCubicMetrePerHour
+    runoffPreviousTimeStep = self.RunoffCubicMetrePerHour
     # runoff calculation
-    self.RunoffCubicMetrePerHour=accuthresholdflux(self.ldd, rainFlux, potentialAbstractionFlux)*self.cellArea
-    self.actualAbstractionFlux=accuthresholdstate(self.ldd, rainFlux, potentialAbstractionFlux)
+    self.RunoffCubicMetrePerHour = pcr.accuthresholdflux(self.ldd, rainFlux, potentialAbstractionFlux) * self.cellArea
+    self.actualAbstractionFlux = pcr.accuthresholdstate(self.ldd, rainFlux, potentialAbstractionFlux)
     self.updateCumulativeDischarge()
     # moving average calculation
-    self.RunoffCubicMeterPerHourMovingAverage=(runoffPreviousTimeStep+self.RunoffCubicMetrePerHour)/scalar(2.0)
+    self.RunoffCubicMeterPerHourMovingAverage = (runoffPreviousTimeStep + self.RunoffCubicMetrePerHour) / pcr.scalar(2.0)
     return self.actualAbstractionFlux, self.RunoffCubicMetrePerHour
 
   def budgetCheck(self):
     return self.cumulativeDischargeCubicMetres 
 
-### test 
-#setclone('clone.map')
-#ldd='ldd.map'
-#timestepDuration=2.0
+# test 
+# setclone('clone.map')
+# ldd='ldd.map'
+# timestepDuration=2.0
 #
 #d_runoffAccuthreshold=RunoffAccuthreshold(ldd, timestepDuration)
 #
-#actualAbstractionFlux=d_runoffAccuthreshold.update(0.003,0.005)
+# actualAbstractionFlux=d_runoffAccuthreshold.update(0.003,0.005)
 #
-#report(actualAbstractionFlux,'aaf.map')
-#report(d_runoffAccuthreshold.RunoffCubicMetrePerHour,'q.map')
+# report(actualAbstractionFlux,'aaf.map')
+# report(d_runoffAccuthreshold.RunoffCubicMetrePerHour,'q.map')

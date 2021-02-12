@@ -90,7 +90,7 @@ class SurfaceStore:
 
   def update(self, changeFlux):
     potentialToFlux = self.potentialToFlux()
-    changeFluxGreaterThanPotentialToFlux = changeFlux >= potentialToFlux + maxErrorInFluxesForErrorMessages
+    changeFluxGreaterThanPotentialToFlux = changeFlux > (potentialToFlux + maxErrorInFluxesForErrorMessages)
     generalfunctions.printErrorMessageIfACellContainsTrue(changeFluxGreaterThanPotentialToFlux,
                                          'added more water to surface store than possible')
     self.changeAmount = self.fluxToAmount(changeFlux)
