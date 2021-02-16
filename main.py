@@ -96,7 +96,7 @@ setOfVariablesToReport = 'full'
 # first time users should use class CatchmentModel(DynamicModel,MonteCarloModel):
 # in case of particle filtering, CHANGE ALSO TIMESERIES FILE FOR SCENARIOS!!!!!!!!!
 # class CatchmentModel(DynamicModel,MonteCarloModel,ParticleFilterModel):
-    
+
 
 ################
 # model inputs #
@@ -107,8 +107,8 @@ setOfVariablesToReport = 'full'
 dem = pcr.scalar(inputFolder + 'mergeDem.map')
 # report locations, i.e. outflow points, for instance, at the outlet
 locations = pcr.nominal(inputFolder + 'mergeOutFlowsNominal.map')
-# map with forest or no forest, only used when swapCatchments is True 
-forestNoForest = pcr.boolean(inputFolder + 'mergeForestNoForest.map') 
+# map with forest or no forest, only used when swapCatchments is True
+forestNoForest = pcr.boolean(inputFolder + 'mergeForestNoForest.map')
 areas = inputFolder + 'mergeForestNoForest.map'
 
 # real time of first time step, duration of time step
@@ -183,7 +183,7 @@ vegetationHeightValue = pcr.scalar(inputFolder + "mergeVegHeightFS.map")
 
 # dem geometry ###########
 
-lddMap = inputFolder + 'mergeldd.map'
+lddMap = pcr.readmap(inputFolder + 'mergeldd.map')
 
 
 
@@ -203,9 +203,9 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.createInstancesPremcloop()
 
     # required for reporting as numpy
-    self.locations = pcr.cover(locations, 0) 
+    self.locations = pcr.cover(locations, 0)
     pcr.report(self.locations, 'locats')
-   
+
     self.forestNoForest = forestNoForest
     idMap = pcr.uniqueid(self.clone)
     oneLocationPerArea = pcr.areamaximum(idMap, self.forestNoForest) == idMap
@@ -213,7 +213,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # end required for reporting as numpy
 
   def initial(self):
-    self.timeStepDuration = timeStepDurationHoursFloatingPointValue 
+    self.timeStepDuration = timeStepDurationHoursFloatingPointValue
     self.initializeTime(startTimeYearValue, startTimeMonthValue, startTimeDayValue, self.timeStepDuration)
     self.createInstancesInitial()
     self.d_exchangevariables.upwardSeepageFlux = pcr.scalar(0)
@@ -228,7 +228,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # time
     self.d_dateTimePCRasterPython.update()
     timeDatetimeFormat = self.d_dateTimePCRasterPython.getTimeDatetimeFormat()
-   
+
     # precipitation
     # for calibration
     rainfallFluxDeterm = pcr.timeinputscalar(rainfallFluxDetermTimeSeries, rainfallFluxDetermTimeSeriesAreas)
@@ -275,12 +275,12 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # we assume all cells receive the same solar radiation as measured by the device
     # except for shading, if shading, there is nothing received
     fractionReceived = pcr.ifthenelse(shaded, pcr.scalar(0.0), pcr.scalar(1.0))
-    
+
     fWaterPotential = self.d_subsurfaceWaterOneLayer.getFWaterPotential()
 
     # potential evapotranspiration
     airTemperatureDeterm = pcr.timeinputscalar(airTemperatureDetermString, self.clone)
-    airTemperature = airTemperatureDeterm #airTemperatureDeterm+mapnormal() 
+    airTemperature = airTemperatureDeterm #airTemperatureDeterm+mapnormal()
 
     relativeHumidityDeterm = pcr.timeinputscalar(relativeHumidityDetermString, self.clone)
     relativeHumidity = relativeHumidityDeterm #pcr.max(pcr.min(relativeHumidityDeterm+mapnormal()*0.1,pcr.scalar(1.0)),pcr.scalar(0))
@@ -293,9 +293,9 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     windVelocityDeterm = pcr.timeinputscalar(windVelocityDetermString, self.clone)
     windVelocity = windVelocityDeterm #generalfunctions.mapNormalRelativeError(windVelocityDeterm,0.25)
-    
+
     elevationAboveSeaLevelOfMeteoStation = elevationAboveSeaLevelOfMeteoStationValue
-    
+
     potentialEvapotranspirationFlux, \
            potentialEvapotranspirationAmount, \
            potentialEvapotranspirationFromCanopyFlux, \
@@ -309,8 +309,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                             windVelocity,
                             elevationAboveSeaLevelOfMeteoStation,
                             fWaterPotential,
-                            pcr.pcrlt(rainfallFlux, 0.000000000001))
- 
+                            rainfallFlux < 0.000000000001)
+
     potentialEvapotranspirationFluxNoNegativeValues = pcr.max(0.0, potentialEvapotranspirationFlux)
     potentialEvapotranspirationFluxFromCanopyNoNegativeValues = pcr.max(0.0, potentialEvapotranspirationFromCanopyFlux)
 
@@ -325,7 +325,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.d_exchangevariables.evapFromSoilMultiplier = \
                            pcr.ifthenelse(potentialEvapotranspirationFluxNoNegativeValues < 0.0000000000001,
                            pcr.scalar(1), evapFromSoilMultiplierMV)
-                           
+
     # evapotranspirate from subsurface store
     # potentialEvapotranspirationFluxFromSubsurface= \
     #                       pcr.max(0.0,potentialEvapotranspirationFluxNoNegativeValues-actualAbstractionFluxFromInterceptionStore)
@@ -358,7 +358,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
   def createInstancesPremcloop(self):
     self.d_shading = shading.Shading(self.dem, latitudeOfCatchment, longitudeOfCatchment, timeZone, 1, timeStepsToReportRqs, setOfVariablesToReport)
     # print 'no optimization of shading'
-    
+
 
   def createInstancesInitial(self):
     import generalfunctions
@@ -382,7 +382,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                   25.0, 40.0, saturatedConductivityMetrePerDayValue, createRealizations)
       multiplierMaxStomatalConductance = generalfunctions.mapuniformBounds(
                                   0.8, 1.1, multiplierMaxStomatalConductanceValue, createRealizations)
-       
+
     if swapCatchments:
       regolithThicknessHomogeneous = generalfunctions.swapValuesOfTwoRegions(areas, regolithThicknessHomogeneous, True)
 
@@ -394,7 +394,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                     regolithThicknessHomogeneous,
                     saturatedConductivityMetrePerDay,
                     multiplierMaxStomatalConductance)
-  
+
 
     # class for exchange variables in initial and dynamic
     # introduced to make filtering possible
@@ -480,7 +480,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     stream = streamValue
     theSlope = pcr.slope(self.dem)
     regolithThickness = pcr.ifthenelse(stream, 0.01, regolithThicknessHomogeneous)
-  
+
     self.multiplierWiltingPoint = pcr.scalar(1.0)
     limitingPointFraction = limitingPointFractionValue
 
@@ -529,10 +529,10 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     if swapCatchments:
       albedo = generalfunctions.swapValuesOfTwoRegions(areas, albedo, True)
 
-    maxStomatalConductance = maxStomatalConductanceValue * multiplierMaxStomatalConductance 
+    maxStomatalConductance = maxStomatalConductanceValue * multiplierMaxStomatalConductance
     if swapCatchments:
       maxStomatalConductance = generalfunctions.swapValuesOfTwoRegions(areas, maxStomatalConductance, True)
-    
+
     vegetationHeight = vegetationHeightValue
     if swapCatchments:
       vegetationHeight = generalfunctions.swapValuesOfTwoRegions(areas, vegetationHeight, True)
@@ -561,7 +561,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                  self.d_runoffAccuthreshold, \
                  self.d_shading, \
                  self.d_subsurfaceWaterOneLayer
-                 ] 
+                 ]
 
     for component in components:
       component.reportAsMaps(self.currentSampleNumber(), self.currentTimeStep())
@@ -585,14 +585,14 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     componentsToReportAsNumpy should correspond with the numpy one in reportComponentsDynamic
     """
     componentsToReportAsNumpy = [
-                 self.d_runoffAccuthreshold, 
+                 self.d_runoffAccuthreshold,
                  self.d_subsurfaceWaterOneLayer,
                  self.d_interceptionuptomaxstore,
                  self.d_randomparameters
                                 ]
     for component in componentsToReportAsNumpy:
       component.reportAsNumpyPostmcloop(range(1, nrOfSamples + 1), range(1, numberOfTimeSteps + 1))
-    
+
 
   def reportRandomParametersDynamic(self):
     self.d_randomparameters.reportAtLastTimeStep(self.currentSampleNumber(), self.currentTimeStep(), self.nrTimeSteps())
@@ -608,11 +608,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                  self.d_runoffAccuthreshold,
                  self.d_shading,
                  self.d_subsurfaceWaterOneLayer
-                 ] 
+                 ]
 
     for component in components:
       generalfunctions.printMemberVariables(component)
-    
+
   def printComponentsDynamic(self):
     self.d_dateTimePCRasterPython.printit()
 
@@ -651,7 +651,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       increaseInStoreCubicMetresInUpstreamArea = pcr.catchmenttotal(store, self.ldd) * pcr.cellarea()
       totalIncreaseInStoresCubicMetresInUpstreamArea = totalIncreaseInStoresCubicMetresInUpstreamArea + \
                                                      increaseInStoreCubicMetresInUpstreamArea
-    
+
     pcr.report(totalIncreaseInStoresCubicMetresInUpstreamArea, pcrfw.generateNameST('inSt', currentSampleNumber, currentTimeStep))
     pcr.report(increaseInRunoffStoreCubicMetresInUpstreamArea, pcrfw.generateNameST('inRu', currentSampleNumber, currentTimeStep))
     pcr.report(pcr.catchmenttotal(self.d_exchangevariables.upwardSeepageFlux, self.ldd) * pcr.cellarea(), pcrfw.generateNameST('inSe', currentSampleNumber, currentTimeStep))
@@ -677,7 +677,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                    self.d_evapotranspirationPenman,
                    self.d_runoffAccuthreshold, \
                    # self.d_shading, \
-                   self.d_subsurfaceWaterOneLayer] 
+                   self.d_subsurfaceWaterOneLayer]
 
       for component in components:
         generalfunctions.reportMemberVariablesOfAClassForSuspend(component, self.currentTimeStep(), self.currentSampleNumber())
@@ -724,7 +724,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                   self.d_evapotranspirationPenman,
                   self.d_runoffAccuthreshold, \
                   # self.d_shading, \
-                  self.d_subsurfaceWaterOneLayer] 
+                  self.d_subsurfaceWaterOneLayer]
 
     for component in components:
       generalfunctions.readMemberVariablesOfAClassForResume(

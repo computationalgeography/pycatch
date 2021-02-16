@@ -64,7 +64,7 @@ class EvapotranspirationPenman(component.Component):
                             'Epc': self.potentialEvapotranspirationFromCanopyFlux,
                             # 'Ecl': self.cloudFactor,
                             # 'Ecs': self.clearSkyIncomingShortwaveRadiationFlatSurface,
-                            # 'Eis': self.incomingShortwaveRadiationFlatSurface 
+                            # 'Eis': self.incomingShortwaveRadiationFlatSurface
                                  }
     if self.setOfVariablesToReport == 'filtering':
       self.variablesToReport = { }
@@ -75,7 +75,7 @@ class EvapotranspirationPenman(component.Component):
                             'gc': self.maxStomatalConduc,
                             # 'Ecl': self.cloudFactor,
                             # 'Ecs': self.clearSkyIncomingShortwaveRadiationFlatSurface,
-                            # 'Eis': self.incomingShortwaveRadiationFlatSurface, 
+                            # 'Eis': self.incomingShortwaveRadiationFlatSurface,
                                     }
 
   def reportAsNumpyOneFile(self, locations, sample, timestep, endTimeStep):
@@ -136,10 +136,10 @@ class EvapotranspirationPenman(component.Component):
     self.elevationAboveSeaLevelOfMeteoStation = pcr.scalar(elevationAboveSeaLevelOfMeteoStation)
     self.fWaterPotential = fWaterPotential
     self.evapotranspirationOccurs = evapotranspirationOccurs
-    
-    
+
+
     # Radiation module
-    
+
     ST = 5.67 * 10.0**-8.0  # Stephan-Boltzman constant (W m-2 K-4)
 
     # saturated vapour pressure (Pa), eq 8.18 (eq 11 in FAO56)
@@ -154,8 +154,8 @@ class EvapotranspirationPenman(component.Component):
     # cloud factor (-), eq 8.19
     self.cloudFactor = pcr.min(pcr.scalar(1.0),
                      self.incomingShortwaveRadiationFlatSurface / self.clearSkyIncomingShortwaveRadiationFlatSurface)
-    
-         
+
+
     # potential longwave radiation (W m-2), eq 8.20
     pLongRadiation = ST * (self.airTemperature + 273.15)**4.0
 
@@ -165,21 +165,21 @@ class EvapotranspirationPenman(component.Component):
     # net radiation (W m-2), eq 8.15
     netRadiation = pcr.max(0.00001, self.incomingShortwaveRadiation * (1.0 - self.albedo) - netLongRadiation)
 
-    
+
     # aerodynamic resistance module
-        
+
     # Wind velocity at z (based on equation 5.33, Holton 2004)
     observedWindHeight = 3.0					# height of meteo station
     self.aboveVegHeight = self.vegHeight + 3.0				# we assume wind measurement is 3 m above vegetation
     self.windVelocityAboveVegHeight = self.windVelocityNotZero + (0.3 / 0.41) * pcr.ln(self.aboveVegHeight / observedWindHeight)
 
-            
+
     #  aerodynamic resistance, Grace (1981)
-    self.aerodynamicRes = pcr.ln((self.aboveVegHeight - 0.7 * self.vegHeight) / (0.1 * self.vegHeight))**2 / (0.41**2.0 * self.windVelocityAboveVegHeight)   
+    self.aerodynamicRes = pcr.ln((self.aboveVegHeight - 0.7 * self.vegHeight) / (0.1 * self.vegHeight))**2.0 / (0.41**2.0 * self.windVelocityAboveVegHeight)
     # self.aerodynamicRes=5.0
     # report(pcr.scalar(self.aerodynamicRes),'ra.map')
-         
-    
+
+
     # surface resistance module
     #  soil moisture reduction factor for stomatal conductance, simplified (see Brolsma et al 2010)
 

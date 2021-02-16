@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-from pcraster import * 
+import pcraster as pcr
+import pcraster.framework as pcrfw
 import sys, generalfunctions
-from pcraster.framework import *
 import component
 
 # class to report random variables, mainly
@@ -9,30 +8,30 @@ import component
 # in addition they are stored at the last time step
 
 class RandomParameters(component.Component):
-  def __init__(self,timeStepsToReport, \
-                    setOfVariablesToReport,  \
-                    maximumInterceptionCapacityPerLAI, \
+  def __init__(self, timeStepsToReport,
+                    setOfVariablesToReport,
+                    maximumInterceptionCapacityPerLAI,
                     ksat,
-                    regolithThicknessHomogeneous, \
-                    saturatedConductivityMetrePerDay, \
+                    regolithThicknessHomogeneous,
+                    saturatedConductivityMetrePerDay,
                     multiplierMaxStomatalConductance):
-    
+
     # init for variables required for filtering only (suspend, resume)
     # ..
-    self.variablesAsNumpyToReport={}
-    self.variablesToReport={}
- 
+    self.variablesAsNumpyToReport = {}
+    self.variablesToReport = {}
+
     # real inits
-    self.timeStepsToReport=timeStepsToReport
-    self.setOfVariablesToReport=setOfVariablesToReport
-    self.maximumInterceptionCapacityPerLAI=maximumInterceptionCapacityPerLAI
-    self.ksat=ksat
-    self.regolithThicknessHomogeneous=regolithThicknessHomogeneous
-    self.saturatedConductivityMetrePerDay=saturatedConductivityMetrePerDay
-    self.multiplierMaxStomatalConductance=multiplierMaxStomatalConductance
+    self.timeStepsToReport = timeStepsToReport
+    self.setOfVariablesToReport = setOfVariablesToReport
+    self.maximumInterceptionCapacityPerLAI = maximumInterceptionCapacityPerLAI
+    self.ksat = ksat
+    self.regolithThicknessHomogeneous = regolithThicknessHomogeneous
+    self.saturatedConductivityMetrePerDay = saturatedConductivityMetrePerDay
+    self.multiplierMaxStomatalConductance = multiplierMaxStomatalConductance
 
 
-  def reportAsMaps(self,sample,timestep):
+  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = {}
     if self.setOfVariablesToReport == 'full':
       self.variablesToReport = {
@@ -53,9 +52,9 @@ class RandomParameters(component.Component):
 
     if timestep in self.timeStepsToReport:
       for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+        pcr.report(self.variablesToReport[variable], pcrfw.generateNameST(variable, sample, timestep))
 
-  def reportAsNumpy(self,locations,sample,timestep):
+  def reportAsNumpy(self, locations, sample, timestep):
     self.variablesAsNumpyToReport = {
                                  'RPic': self.maximumInterceptionCapacityPerLAI,
                                  'RPks': self.ksat,
@@ -65,10 +64,10 @@ class RandomParameters(component.Component):
                                     }
     import generalfunctions
     for variable in self.variablesAsNumpyToReport:
-      generalfunctions.reportLocationsAsNumpyArray(locations,self.variablesAsNumpyToReport[variable], \
-                       variable,sample,timestep)
+      generalfunctions.reportLocationsAsNumpyArray(locations, self.variablesAsNumpyToReport[variable],
+                       variable, sample, timestep)
 
-  def reportAsNumpyPostmcloop(self,samples,timeSteps):
+  def reportAsNumpyPostmcloop(self, samples, timeSteps):
     self.variablesAsNumpyToReport = {
                                  'RPic': self.maximumInterceptionCapacityPerLAI,
                                  'RPks': self.ksat,
@@ -78,10 +77,10 @@ class RandomParameters(component.Component):
                                     }
     import generalfunctions
     for variable in self.variablesAsNumpyToReport:
-      aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray(variable,samples,timeSteps)
-      numpy.save(variable,aVariable)
+      aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray(variable, samples, timeSteps)
+      numpy.save(variable, aVariable)
 
-  def reportAtLastTimeStep(self,sample,timestep,nrofsteps):
+  def reportAtLastTimeStep(self, sample, timestep, nrofsteps):
     self.variablesToReport = {
                                  'RPic': self.maximumInterceptionCapacityPerLAI,
                                  'RPks': self.ksat,
@@ -91,4 +90,4 @@ class RandomParameters(component.Component):
                                 }
     import generalfunctions
     for variable in self.variablesToReport:
-      generalfunctions.reportAVariableAtTheLastTimeStep(timestep,sample,nrofsteps, self.variablesToReport[variable],variable)
+      generalfunctions.reportAVariableAtTheLastTimeStep(timestep, sample, nrofsteps, self.variablesToReport[variable], variable)
