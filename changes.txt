@@ -1,8 +1,9 @@
 Changelog and remarks
 
-To do:
-- copy models/pyhydroCalibration to lisa
-- change sara.sh (upper lines)
+## 19 May 2021
+
+Added main_weekly.py to the repo
+
 
 ## 21 March 2013
 

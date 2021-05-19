@@ -2,3 +2,9 @@ kinematic wave
 this already exists in the older version, see pcrasterPythonHydrology
 
 
+main_weekly.py
+- modify the code for the timeseries reports (and stats)
+- possibly update the code for plotting the output as timeseries
+- check the grazing pressure settings (slow, rapid, etc, how can it be defined)
+
+

@@ -36,9 +36,9 @@ def timeseriesAsDateTime(numberOfTimeSteps,startTime,timeStepDurationDays):
 
 def timeStepsAsDateTime(steps,startTime,timeStepDurationDays):
   stepsAsDays=steps*timeStepDurationDays
-  startTimeAsDays=matplotlib.dates.date2num(startTime)
+  startTimeAsDays=plt.matplotlib.dates.date2num(startTime)
   realTimeAsDays=stepsAsDays+startTimeAsDays
-  stepsAsDateTime=matplotlib.dates.num2date(realTimeAsDays)
+  stepsAsDateTime=plt.matplotlib.dates.num2date(realTimeAsDays)
   return stepsAsDateTime
 
 def swapXandYInArray(a):
@@ -61,14 +61,14 @@ def scoreAtPercentileOfFlowDurationCurve(timeseries,percentile):
   # these are not available as there is only one bins, i.e. we have
   # realizations on the xaxis, not on the yaxis
   if len(numpy.shape(timeseries)) == 1:  # one sample
-    print 'you supplied only one sample'
+    print('you supplied only one sample')
   fig=plt.figure()
   left=fig.add_subplot(211)
   n,bins,patches=left.hist(timeseries, bins=100,normed=True, cumulative=-1)
-  print 'ns are', n
+  print('ns are', n)
   #score=scipy.stats.scoreatpercentile(n, 50, limit=())
   score=numpy.percentile(n, 50, limit=())
-  print score
+  print(score)
 
 def valuesInSelectedAreaOfVariablesInStackedList(listOfVariablesSelection):
     """Selects from each variable in listOfVariables the value at the locations
@@ -143,8 +143,8 @@ def plotFlowDurationCurve(self,timeseries,**kwargs):
 def getQInFlowDuration(percentiel,xVals,median):
   p=(len(xVals)/100.0)*percentiel
   position=int(round(p))
-  print 'Q value ', percentiel, 
-  print ' discharge ', median[position]
+  print('Q value ', percentiel, )
+  print(' discharge ', median[position])
 
 def plotConfidenceIntervalOfFlowDurationCurve(self,timeseries,percentileLower,percentileUpper,**kwargs):
   fig=plt.figure()
@@ -178,7 +178,7 @@ def scatterPlotMatrixOfDataFrame(data, names, **kwargs):
     passed on to matplotlib's "plot" command. Returns the matplotlib figure
     object containg the subplot grid."""
     numvars, numdata = data.shape
-    fig, axes = matplotlib.pyplot.subplots(nrows=numvars, ncols=numvars, figsize=(8,8))
+    fig, axes = plt.matplotlib.pyplot.subplots(nrows=numvars, ncols=numvars, figsize=(8,8))
     fig.subplots_adjust(hspace=0.05, wspace=0.05)
 
     for ax in axes.flat:
@@ -234,19 +234,19 @@ def mapsOfMapTimeSeries(mapsAsNumpy,timesteps,samples,labels):
   Voor plotten van ldd inspireer je door http://matplotlib.org/examples/specialty_plots/hinton_demo.html
   '''
   numberOfCols=len(timesteps) # add one for colorbar
-  fig, axes = matplotlib.pyplot.subplots(nrows=len(samples), ncols=numberOfCols,squeeze=False)
+  fig, axes = plt.matplotlib.pyplot.subplots(nrows=len(samples), ncols=numberOfCols,squeeze=False)
 
   minVal = numpy.min(mapsAsNumpy[timesteps,samples,:,:])
   maxVal = numpy.max(mapsAsNumpy[timesteps,samples,:,:])
-  print minVal,maxVal
-  a=matplotlib.colors.Normalize(vmin=minVal,vmax=maxVal)
+  print(minVal,maxVal)
+  a=plt.matplotlib.colors.Normalize(vmin=minVal,vmax=maxVal)
 
   y=0
   for sample in samples:
     x=0
     for timestep in timesteps:
       data=mapsAsNumpy[timestep,sample,:,:]
-      print data
+      print(data)
       jan=axes[y,x].imshow(data,interpolation="nearest",norm=a)
       axes[y,x].axes.get_xaxis().set_ticks([])
       axes[y,x].axes.get_yaxis().set_ticks([])
@@ -304,8 +304,8 @@ def griddataMean(x,y,slices):
   yOutAllPercentiles=[]
   #percentiles=[10,20,30,40,50,60,70,80,90]
   percentiles=[20,30,40,50,60,70,80]
-  print 'goes wrong when x or y has -9999!!!'
-  print 'due to maskValuesNotInBin'
+  print('goes wrong when x or y has -9999!!!')
+  print('due to maskValuesNotInBin')
   for bin in binBoundPairs:
     xValues,yValues=maskValuesNotInBin(bin,x,y)
     xValuesCompressed=numpy.ma.compressed(xValues) 

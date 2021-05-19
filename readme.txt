@@ -10,10 +10,11 @@ Installation
 
 Create a conda environment by running pcraster_pycatch.yaml
 
-To run the model, run main.py
+To run the model with 1 h timestep, run main.py
+To run the model with 1 week timestep, run main_weekly.py (this model includes erosion, not documented et)
 
 
-Configuring the model
+Configuring the main.py model
 =============================
 
 To remove all output, run clean.sh, this does NOT remove inputs, so there is no major risk, but check what is in clean.sh first

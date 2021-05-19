@@ -25,7 +25,7 @@ class RegolithDemAndBedrock:
     self.setOfVariablesToReport=setOfVariablesToReport
     #self.minimumAllowedRegolithThickness=0.000001
     self.minimumAllowedRegolithThickness=0.001
-    print 'LET OP minimumAllowedRegolithThickness=0.001 instead of 0.000001'
+    print('LET OP minimumAllowedRegolithThickness=0.001 instead of 0.000001')
     self.surfaceLdd=lddcreate(self.dem,1e31,1e31,1e31,1e31)
     self.bedrockLdd=lddcreate(self.demOfBedrock,1e31,1e31,1e31,1e31)
 

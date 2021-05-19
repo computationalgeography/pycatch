@@ -58,7 +58,7 @@ class BiomassModifiedMay:
     self.LAIPerBiomass=LAIPerBiomass
     #self.minimumAllowedBiomass=scalar(0.00000001)
     # let op higher minimum allowd biomass
-    print '# let op higher minimum allowd biomass'
+    print('# let op higher minimum allowd biomass')
     self.minimumAllowedBiomass=scalar(0.01)
     self.timeStepDuration=timeStepDuration
     self.timeStepsToReport=timeStepsToReport

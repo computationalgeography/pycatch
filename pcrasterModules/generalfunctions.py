@@ -701,7 +701,7 @@ def keepHistoryOfMaps(currentHistoryOfMaps, mapOfCurrentTimeStep, numberOfTimeSt
 ##############################
 
 def nrCols(map):
-  x = pcr.pcr.xcoordinate(pcr.boolean(map))
+  x = pcr.xcoordinate(pcr.boolean(map))
   xMax = pcr.mapmaximum(x)
   xMin = pcr.mapminimum(x)
   nrCols = ((xMax - xMin) / pcr.celllength()) + 1
@@ -929,7 +929,6 @@ def periodicBoundaryConditionAreatotal(map, fromCells, toCells, cols, rows):
 ##########################
 
 def samplingScheme(clone, nrSamples, fractionShortDistance, separationDistance, nrCellsToRight, nrCellsToTop):
-  print('jan')
   # get numb. of samples
   nrSamplesGrid = pcr.rounddown((1.0 - fractionShortDistance) * nrSamples)
   nrSamplesShortDistance = nrSamples - nrSamplesGrid
