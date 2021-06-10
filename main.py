@@ -6,15 +6,15 @@ import glob
 import sys
 import os
 
+# add path to modules required
+sys.path.append("./pcrasterModules/")
+
+import configuration as cfg
+
 # PCRaster itself
 import pcraster as pcr
 import pcraster.framework as pcrfw
 
-# add path to modules required
-sys.path.append("./pcrasterModules/")
-
-
-import configuration as cfg
 
 # from pcrasterModules
 import datetimePCRasterPython
@@ -104,14 +104,14 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
   def premcloop(self):
     self.clone = pcr.boolean(cfg.cloneString)
-    self.dem = cfg.dem
+    self.dem = pcr.scalar(cfg.dem)
     self.createInstancesPremcloop()
 
     # required for reporting as numpy
-    self.locations = pcr.cover(cfg.locations, 0)
+    self.locations = pcr.cover(pcr.nominal(cfg.locations), 0)
     pcr.report(self.locations, 'locats')
 
-    self.forestNoForest = cfg.forestNoForest
+    self.forestNoForest = pcr.boolean(cfg.forestNoForest)
     idMap = pcr.uniqueid(self.clone)
     oneLocationPerArea = pcr.areamaximum(idMap, self.forestNoForest) == idMap
     self.locationsForParameters = pcr.cover(pcr.nominal(pcr.scalar(pcr.ifthen(oneLocationPerArea, self.forestNoForest)) + 1), 0)
@@ -136,7 +136,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     # precipitation
     # for calibration
-    rainfallFluxDeterm = pcr.timeinputscalar(cfg.rainfallFluxDetermTimeSeries, cfg.rainfallFluxDetermTimeSeriesAreas)
+    rainfallFluxDeterm = pcr.timeinputscalar(cfg.rainfallFluxDetermTimeSeries, pcr.nominal(cfg.rainfallFluxDetermTimeSeriesAreas))
     # for the experiments
     rainfallFlux = rainfallFluxDeterm #generalfunctions.mapNormalRelativeError(rainfallFluxDeterm,0.25)
     self.d_exchangevariables.cumulativePrecipitation = \
@@ -278,15 +278,15 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       multiplierMaxStomatalConductance = pcr.scalar(path + pcrfw.generateNameS('RPmm', self.currentSampleNumber()) + '.map')
     else:
       maximumInterceptionCapacityPerLAI = generalfunctions.areauniformBounds(
-                                  0.0001, 0.0005, pcr.nominal(1), cfg.maximumInterceptionCapacityValue, createRealizations)
+                                  0.0001, 0.0005, pcr.nominal(1), pcr.scalar(cfg.maximumInterceptionCapacityValue), createRealizations)
       ksat = generalfunctions.areauniformBounds(
-                                  0.025, 0.05, pcr.nominal(1), cfg.ksatValue, createRealizations)
+                                  0.025, 0.05, pcr.nominal(1), pcr.scalar(cfg.ksatValue), createRealizations)
       regolithThicknessHomogeneous = generalfunctions.areauniformBounds(
-                                  1.0, 3.5, cfg.areas, cfg.regolithThicknessHomogeneousValue, createRealizations)
+                                  1.0, 3.5, cfg.areas, pcr.scalar(cfg.regolithThicknessHomogeneousValue), createRealizations)
       saturatedConductivityMetrePerDay = generalfunctions.mapuniformBounds(
-                                  25.0, 40.0, cfg.saturatedConductivityMetrePerDayValue, createRealizations)
+                                  25.0, 40.0, pcr.scalar(cfg.saturatedConductivityMetrePerDayValue), createRealizations)
       multiplierMaxStomatalConductance = generalfunctions.mapuniformBounds(
-                                  0.8, 1.1, cfg.multiplierMaxStomatalConductanceValue, createRealizations)
+                                  0.8, 1.1, pcr.scalar(cfg.multiplierMaxStomatalConductanceValue), createRealizations)
 
     if swapCatchments:
       regolithThicknessHomogeneous = generalfunctions.swapValuesOfTwoRegions(cfg.areas, regolithThicknessHomogeneous, True)
@@ -315,7 +315,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.ldd = cfg.lddMap
 
     initialInterceptionStore = pcr.scalar(0.000001)
-    leafAreaIndex = cfg.leafAreaIndexValue
+    leafAreaIndex = pcr.scalar(cfg.leafAreaIndexValue)
 
     if swapCatchments:
       leafAreaIndex = generalfunctions.swapValuesOfTwoRegions(cfg.areas, leafAreaIndex, True)
@@ -336,7 +336,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     #################
 
     initialSurfaceStore = pcr.scalar(0.0)
-    maxSurfaceStore = cfg.maxSurfaceStoreValue
+    maxSurfaceStore = pcr.scalar(cfg.maxSurfaceStoreValue)
     self.d_surfaceStore = surfacestore.SurfaceStore(
                         initialSurfaceStore,
                         maxSurfaceStore,
@@ -357,12 +357,12 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # instead, we use initial moisture content fraction as input, read from disk, it is just calculated
     # by pcrcalc 'mergeInitialMoistureContentFraction=Gs000008.761/rts00008.761'
     # note that I also changed the name for the initial soil moisture as a fraction
-    initialSoilMoistureFractionFromDisk = cfg.initialSoilMoistureFractionFromDiskValue
+    initialSoilMoistureFractionFromDisk = pcr.scalar(cfg.initialSoilMoistureFractionFromDiskValue)
     if swapCatchments:
       initialSoilMoistureFractionFromDisk = generalfunctions.swapValuesOfTwoRegions(cfg.areas, initialSoilMoistureFractionFromDisk, True)
 
     # initial soil moisture as a fraction should not be above soil porosity as a fraction, just a check
-    soilPorosityFraction = cfg.soilPorosityFractionValue
+    soilPorosityFraction = pcr.scalar(cfg.soilPorosityFractionValue)
     if swapCatchments:
       soilPorosityFraction = generalfunctions.swapValuesOfTwoRegions(cfg.areas, soilPorosityFraction, True)
     initialSoilMoistureFraction = pcr.min(soilPorosityFraction, initialSoilMoistureFractionFromDisk)
@@ -382,22 +382,22 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     demOfBedrockTopography = self.dem
 
-    stream = cfg.streamValue
+    stream = pcr.boolean(cfg.streamValue)
     theSlope = pcr.slope(self.dem)
     regolithThickness = pcr.ifthenelse(stream, 0.01, regolithThicknessHomogeneous)
 
     self.multiplierWiltingPoint = pcr.scalar(1.0)
-    limitingPointFraction = cfg.limitingPointFractionValue
+    limitingPointFraction = pcr.scalar(cfg.limitingPointFractionValue)
 
     if swapCatchments:
       limitingPointFraction = generalfunctions.swapValuesOfTwoRegions(cfg.areas, limitingPointFraction, True)
-    mergeWiltingPointFractionFS = cfg.mergeWiltingPointFractionFSValue
+    mergeWiltingPointFractionFS = pcr.scalar(cfg.mergeWiltingPointFractionFSValue)
     if swapCatchments:
       mergeWiltingPointFractionFS = generalfunctions.swapValuesOfTwoRegions(cfg.areas, mergeWiltingPointFractionFS, True)
     wiltingPointFractionNotChecked = mergeWiltingPointFractionFS * self.multiplierWiltingPoint
     wiltingPointFraction = pcr.min(wiltingPointFractionNotChecked, limitingPointFraction)
 
-    fieldCapacityFraction = cfg.fieldCapacityFractionValue
+    fieldCapacityFraction = pcr.scalar(cfg.fieldCapacityFractionValue)
     if swapCatchments:
       fieldCapacityFraction = generalfunctions.swapValuesOfTwoRegions(cfg.areas, fieldCapacityFraction, True)
 
@@ -430,15 +430,15 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # evapotranspiration #
     ######################
 
-    albedo = cfg.albedoValue
+    albedo = pcr.scalar(cfg.albedoValue)
     if swapCatchments:
       albedo = generalfunctions.swapValuesOfTwoRegions(cfg.areas, albedo, True)
 
-    maxStomatalConductance = cfg.maxStomatalConductanceValue * multiplierMaxStomatalConductance
+    maxStomatalConductance = pcr.scalar(cfg.maxStomatalConductanceValue) * multiplierMaxStomatalConductance
     if swapCatchments:
       maxStomatalConductance = generalfunctions.swapValuesOfTwoRegions(cfg.areas, maxStomatalConductance, True)
 
-    vegetationHeight = cfg.vegetationHeightValue
+    vegetationHeight = pcr.scalar(cfg.vegetationHeightValue)
     if swapCatchments:
       vegetationHeight = generalfunctions.swapValuesOfTwoRegions(cfg.areas, vegetationHeight, True)
     self.d_evapotranspirationPenman = evapotranspirationpenman.EvapotranspirationPenman(
