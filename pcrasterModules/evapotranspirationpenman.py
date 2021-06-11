@@ -241,31 +241,31 @@ class EvapotranspirationPenman(component.Component):
     return self.potentialEvapotranspirationFlux, self.potentialEvapotranspirationAmount,  \
            self.potentialEvapotranspirationFromCanopyFlux, self.potentialEvapotranspirationFromCanopyAmount
 
-# test
-# setclone('mergeClone.map')
-timeStepDuration = pcr.scalar(1)
-albedo = pcr.scalar(0.15)
-maxStomatalConductance = 0.0053
-vegetationHeight = 5.0
-timeStepsToReportAll = 'test'
-setOfVariablesToReport = 'test'
-# d_penmanPCRasterPython = EvapotranspirationPenman(
-                                         # timeStepDuration, \
-                                         # albedo, \
-                                         # maxStomatalConductance, \
-                                         # vegetationHeight, \
-                                         # timeStepsToReportAll, \
-                                         # setOfVariablesToReport)
-# inputs for testing
-airTemperature = pcr.scalar(23)
-relativeHumidity = pcr.scalar(0.6)
-incomingShortwaveRadiationAtSurface = pcr.scalar(300.0)
-incomingShortwaveRadiationFlatSurface = pcr.scalar(300.0)
-fractionReceivedFlatSurface = 1.0
-windVelocity = 0.3
-elevationAboveSeaLevelOfMeteoStation = 900.0
-fWaterPotential = 0.2
-evapotranspirationOccurs = 1
+## test
+## setclone('mergeClone.map')
+#timeStepDuration = pcr.scalar(1)
+#albedo = pcr.scalar(0.15)
+#maxStomatalConductance = 0.0053
+#vegetationHeight = 5.0
+#timeStepsToReportAll = 'test'
+#setOfVariablesToReport = 'test'
+## d_penmanPCRasterPython = EvapotranspirationPenman(
+                                         ## timeStepDuration, \
+                                         ## albedo, \
+                                         ## maxStomatalConductance, \
+                                         ## vegetationHeight, \
+                                         ## timeStepsToReportAll, \
+                                         ## setOfVariablesToReport)
+## inputs for testing
+#airTemperature = pcr.scalar(23)
+#relativeHumidity = pcr.scalar(0.6)
+#incomingShortwaveRadiationAtSurface = pcr.scalar(300.0)
+#incomingShortwaveRadiationFlatSurface = pcr.scalar(300.0)
+#fractionReceivedFlatSurface = 1.0
+#windVelocity = 0.3
+#elevationAboveSeaLevelOfMeteoStation = 900.0
+#fWaterPotential = 0.2
+#evapotranspirationOccurs = 1
 
 
 # call function in class

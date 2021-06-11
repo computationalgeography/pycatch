@@ -1,5 +1,4 @@
 import pathlib
-import pcraster as pcr
 
 # define number of hourly timesteps to run
 numberOfTimeSteps = 10986
@@ -16,13 +15,12 @@ inputFolder = "inputs"
 
 # set clone
 cloneString = str(pathlib.Path(inputFolder, "mergeClone.map"))
-pcr.setclone(cloneString)
 
-dem = pcr.scalar(str(pathlib.Path(inputFolder, 'mergeDem.map')))
+dem = str(pathlib.Path(inputFolder, 'mergeDem.map'))
 # report locations, i.e. outflow points, for instance, at the outlet
-locations = pcr.nominal(str(pathlib.Path(inputFolder, 'mergeOutFlowsNominal.map')))
+locations = str(pathlib.Path(inputFolder, 'mergeOutFlowsNominal.map'))
 # map with forest or no forest, only used when swapCatchments is True
-forestNoForest = pcr.boolean(str(pathlib.Path(inputFolder, 'mergeForestNoForest.map')))
+forestNoForest = str(pathlib.Path(inputFolder, 'mergeForestNoForest.map'))
 areas = str(pathlib.Path(inputFolder, 'mergeForestNoForest.map'))
 
 
@@ -31,7 +29,7 @@ areas = str(pathlib.Path(inputFolder, 'mergeForestNoForest.map'))
 # observed precipitation
 rainfallFluxDetermTimeSeries = str(pathlib.Path(inputFolder, "rainfallFluxTwoCatchsJulAugSep0506.tss"))
 # areas linked to rainfallFluxDetermTimeSeries
-rainfallFluxDetermTimeSeriesAreas = pcr.nominal(str(pathlib.Path(inputFolder, "mergeArnasSansaNominal.map")))
+rainfallFluxDetermTimeSeriesAreas = str(pathlib.Path(inputFolder, "mergeArnasSansaNominal.map"))
 
 airTemperatureDetermString = str(pathlib.Path(inputFolder, "airTemperatureArnaJulAugSep0506.tss"))
 relativeHumidityDetermString = str(pathlib.Path(inputFolder, "relativeHumidityArnasJulAugSep0506.tss"))
@@ -41,42 +39,42 @@ elevationAboveSeaLevelOfMeteoStationValue = 900.0
 
 
 # interception #######
-maximumInterceptionCapacityValue = pcr.scalar(0.0002)
-leafAreaIndexValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeVegLAIFS.map")))
+maximumInterceptionCapacityValue = 0.0002
+leafAreaIndexValue = str(pathlib.Path(inputFolder, "mergeVegLAIFS.map"))
 
 
 # surface storage ######
-maxSurfaceStoreValue = pcr.scalar(0.001)
+maxSurfaceStoreValue = 0.001
 
 
 # infiltration #######
 
 # green and ampt
-ksatValue = pcr.scalar(0.0163)
-initialSoilMoistureFractionFromDiskValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map")))
-soilPorosityFractionValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergePorosityFractionFS.map")))
+ksatValue = 0.0163
+initialSoilMoistureFractionFromDiskValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
+soilPorosityFractionValue = str(pathlib.Path(inputFolder, "mergePorosityFractionFS.map"))
 
 
 # regolith geometry ########
-regolithThicknessHomogeneousValue = pcr.scalar(0.5)
+regolithThicknessHomogeneousValue = 0.5
 
 # location of the stream, used to adjust regolith thickness there
-streamValue = pcr.boolean(str(pathlib.Path(inputFolder, 'mergeStream.map')))
+streamValue = str(pathlib.Path(inputFolder, 'mergeStream.map'))
 
 
 # 'groundwater' (saturated flow) ##########
-saturatedConductivityMetrePerDayValue = pcr.scalar(37.0)
-limitingPointFractionValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map")))
-mergeWiltingPointFractionFSValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map")))
-fieldCapacityFractionValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map")))
+saturatedConductivityMetrePerDayValue = 37.0
+limitingPointFractionValue = str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map"))
+mergeWiltingPointFractionFSValue = str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map"))
+fieldCapacityFractionValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
 
 # evapotranspiration ###########
 
 # penman
-multiplierMaxStomatalConductanceValue = pcr.scalar(1.0)
-albedoValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeVegAlbedoFS.map")))
-maxStomatalConductanceValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeVegStomatalFS.map")))
-vegetationHeightValue = pcr.scalar(str(pathlib.Path(inputFolder, "mergeVegHeightFS.map")))
+multiplierMaxStomatalConductanceValue = 1.0
+albedoValue = str(pathlib.Path(inputFolder, "mergeVegAlbedoFS.map"))
+maxStomatalConductanceValue = str(pathlib.Path(inputFolder, "mergeVegStomatalFS.map"))
+vegetationHeightValue = str(pathlib.Path(inputFolder, "mergeVegHeightFS.map"))
 
 
 # dem geometry ###########
