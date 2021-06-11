@@ -1,11 +1,16 @@
 import pathlib
 
 # define number of hourly timesteps to run
-numberOfTimeSteps = 10986
+numberOfTimeSteps = 10968
 
 # folder with input files (maps, timeseries)
 inputFolder = "inputs"
 
+with_shading = True
+
+if with_shading == False:
+  fractionReceivedValue = 1.0
+  fractionReceivedFlatSurfaceValue = 1.0
 
 ################
 # model inputs #

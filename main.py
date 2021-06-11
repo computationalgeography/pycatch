@@ -1,7 +1,5 @@
 # general
-import math
 import datetime
-import random
 import glob
 import sys
 import os
@@ -25,7 +23,6 @@ import subsurfacewateronelayer
 import evapotranspirationpenman
 import runoffaccuthreshold
 import shading
-import component
 import generalfunctions
 import randomparameters
 
@@ -173,13 +170,17 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.d_surfaceStore.update(surfaceStoreChange)
     actualAdditionFlux = self.d_subsurfaceWaterOneLayer.addWater(actualInfiltrationFlux)
 
-    # solar radiation (POTRAD, shading effect and inclination)
-    fractionReceived, fractionReceivedFlatSurface, shaded = \
-                                          self.d_shading.update(timeDatetimeFormat)
+    if cfg.with_shading:
+      # solar radiation (POTRAD, shading effect and inclination)
+      fractionReceived, fractionReceivedFlatSurface, shaded = \
+                                            self.d_shading.update(timeDatetimeFormat)
 
-    # we assume all cells receive the same solar radiation as measured by the device
-    # except for shading, if shading, there is nothing received
-    fractionReceived = pcr.ifthenelse(shaded, pcr.scalar(0.0), pcr.scalar(1.0))
+      # we assume all cells receive the same solar radiation as measured by the device
+      # except for shading, if shading, there is nothing received
+      fractionReceived = pcr.ifthenelse(shaded, pcr.scalar(0.0), pcr.scalar(1.0))
+    else:
+      fractionReceived = pcr.scalar(cfg.fractionReceivedValue)
+      fractionReceivedFlatSurface = pcr.scalar(cfg.fractionReceivedFlatSurfaceValue)
 
     fWaterPotential = self.d_subsurfaceWaterOneLayer.getFWaterPotential()
 
@@ -261,8 +262,9 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       self.reportAsNumpyComponentsPostmcloop()
 
   def createInstancesPremcloop(self):
-    self.d_shading = shading.Shading(self.dem, cfg.latitudeOfCatchment, cfg.longitudeOfCatchment, cfg.timeZone, 1, timeStepsToReportRqs, setOfVariablesToReport)
-    # print 'no optimization of shading'
+    if cfg.with_shading:
+      self.d_shading = shading.Shading(self.dem, cfg.latitudeOfCatchment, cfg.longitudeOfCatchment, cfg.timeZone, 1, timeStepsToReportRqs, setOfVariablesToReport)
+      # print('no optimization of shading')
 
 
   def createInstancesInitial(self):
@@ -464,9 +466,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                  self.d_infiltrationgreenandampt, \
                  self.d_evapotranspirationPenman, \
                  self.d_runoffAccuthreshold, \
-                 self.d_shading, \
                  self.d_subsurfaceWaterOneLayer
                  ]
+
+    if cfg.with_shading:
+      components.append(self.d_shading)
 
     for component in components:
       component.reportAsMaps(self.currentSampleNumber(), self.currentTimeStep())
