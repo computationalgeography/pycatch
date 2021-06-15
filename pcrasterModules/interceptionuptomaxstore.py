@@ -36,21 +36,19 @@ class InterceptionUpToMaxStore(component.Component):
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
 
-
-  def reportAsMaps(self, sample, timestep):
-    # reports
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
+    self.output_mapping = {
                                 'Vs': self.store,
                                 'Vo': self.actualAbstractionFlux,
                                 'Vi': self.actualAdditionFlux,
                                 'Vgf': self.gapFraction,
                                 'Vms': self.maximumStore,
                                 'Vot': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+                          }
+
+
+  def reportAsMaps(self, sample, timestep):
+    # reports
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
@@ -104,7 +102,7 @@ class InterceptionUpToMaxStore(component.Component):
 
     # for reporting
     self.totalActualAbstractionInUpstreamArea()
-    
+
     self.store = pcr.max(pcr.min(self.store - actualAbstractionAmount, self.maximumStore), 0)
     return self.actualAbstractionFlux
 
@@ -115,7 +113,7 @@ class InterceptionUpToMaxStore(component.Component):
     self.gapFraction = pcr.scalar(gapFraction)
 
   def setMaximumStore(self, maximumStore):
-    self.maximumStore = pcr.scalar(maximumStore) 
+    self.maximumStore = pcr.scalar(maximumStore)
     self.store = pcr.min(self.store, self.maximumStore)
 
 #  def printit(self, row, column):
@@ -125,7 +123,7 @@ class InterceptionUpToMaxStore(component.Component):
   def budgetCheck(self, sample, timestep):
     # this should include setMaximumStore as this may result in throwing away of water
     # NOTE this is only valid if addition,subtraction and lateral flow are invoked ONCE EACH TIME STEP
-    # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be 
+    # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be
     # comparable with other budgets.
     self.actualAdditionCum = self.actualAdditionCum + self.actualAdditionFlux * self.timeStepDuration
     self.actualAbstractionCum = self.actualAbstractionCum + self.actualAbstractionFlux * self.timeStepDuration

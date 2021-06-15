@@ -11,7 +11,7 @@ import component
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 # the module has to update self.store by itself!
-# also, the module has to update cumulative discharge by itself 
+# also, the module has to update cumulative discharge by itself
 
 class RunoffAccuthreshold(component.Component):
   def __init__(self, ldd, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
@@ -31,18 +31,14 @@ class RunoffAccuthreshold(component.Component):
 
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
- 
+
+    self.output_mapping = {
+                            'Rq': self.RunoffCubicMetrePerHour,
+                            'Rqs': self.RunoffCubicMeterPerHourMovingAverage
+                          }
+
   def reportAsMaps(self, sample, timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                                'Rq': self.RunoffCubicMetrePerHour,
-                                'Rqs': self.RunoffCubicMeterPerHourMovingAverage
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { 
-                                'Rq': self.RunoffCubicMetrePerHour,
-                                  }
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
@@ -98,9 +94,9 @@ class RunoffAccuthreshold(component.Component):
     return self.actualAbstractionFlux, self.RunoffCubicMetrePerHour
 
   def budgetCheck(self):
-    return self.cumulativeDischargeCubicMetres 
+    return self.cumulativeDischargeCubicMetres
 
-# test 
+# test
 # setclone('clone.map')
 # ldd='ldd.map'
 # timestepDuration=2.0

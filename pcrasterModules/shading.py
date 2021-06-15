@@ -3,7 +3,7 @@ import pysolar.solar
 import pytz
 import math
 import supportingfunctions
-from pcraster.framework import * 
+from pcraster.framework import *
 from pcraster import *
 from datetime import *
 import datetimePCRasterPython
@@ -71,18 +71,15 @@ class Shading(component.Component):
 
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
-    
+
+    self.output_mapping = {
+                           'Mfs': self.fractionSolarBeamReceived,
+                           'Msc': self.solarCritAngle,
+                           'Msh': self.shaded
+                          }
+
   def reportAsMaps(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                         'Mfs': self.fractionSolarBeamReceived,
-                         'Msc': self.solarCritAngle,
-                         'Msh': self.shaded 
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
-    import component
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample,timestep)
 
   def updateVariablesAsNumpyToReport(self):
@@ -109,7 +106,7 @@ class Shading(component.Component):
   def calculateSolarAngles(self,timeDatetimeFormat):
     # convert naive time to aware time
     timezone = pytz.timezone(self.timeZone)
-    d_aware = timezone.localize(timeDatetimeFormat) 
+    d_aware = timezone.localize(timeDatetimeFormat)
     print(timeDatetimeFormat, d_aware)
     # solar altitude, sometimes called solar angle
     self.solarAltitudeDegrees=pysolar.solar.get_altitude(self.latitudeFloatingPoint,self.longitudeFloatingPoint,d_aware)

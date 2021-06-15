@@ -30,25 +30,17 @@ class RandomParameters(component.Component):
     self.saturatedConductivityMetrePerDay = saturatedConductivityMetrePerDay
     self.multiplierMaxStomatalConductance = multiplierMaxStomatalConductance
 
+    self.output_mapping = {
+                                 'RPic': self.maximumInterceptionCapacityPerLAI,
+                                 'RPks': self.ksat,
+                                 'RPrt': self.regolithThicknessHomogeneous,
+                                 'RPsc': self.saturatedConductivityMetrePerDay,
+                                 'RPmm': self.multiplierMaxStomatalConductance
+                          }
+
 
   def reportAsMaps(self, sample, timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                                 'RPic': self.maximumInterceptionCapacityPerLAI,
-                                 'RPks': self.ksat,
-                                 'RPrt': self.regolithThicknessHomogeneous,
-                                 'RPsc': self.saturatedConductivityMetrePerDay,
-                                 'RPmm': self.multiplierMaxStomatalConductance
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = {
-                                 'RPic': self.maximumInterceptionCapacityPerLAI,
-                                 'RPks': self.ksat,
-                                 'RPrt': self.regolithThicknessHomogeneous,
-                                 'RPsc': self.saturatedConductivityMetrePerDay,
-                                 'RPmm': self.multiplierMaxStomatalConductance
-                                 }
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
 
     if timestep in self.timeStepsToReport:
       for variable in self.variablesToReport:

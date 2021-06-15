@@ -41,3 +41,15 @@ class Component:
     for variable in self.variablesAsNumpyToReport:
       aVariable = generalfunctions.openSamplesAsNumpyArrays(variable, samples, timeSteps)
       numpy.save(variable + '_of', aVariable)
+
+  def rasters_to_report(self, variables):
+    # Returns dictionary with member variables
+    result = {}
+    for name in variables:
+      try:
+        result[name] = self.output_mapping[name]
+      except KeyError as e:
+        msg = f"Variable {e} is not available for report, use one of: {', '.join(list(self.output_mapping.keys()))}"
+        raise KeyError(msg)
+
+    return result
