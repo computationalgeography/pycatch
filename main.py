@@ -30,65 +30,12 @@ import randomparameters
 import exchangevariables
 
 
-# Define the number of Monte Carlo samples or particles
-# first time users will use 1 and results for that realization are written to
-# the folder '1'
-nrOfSamples = 1
-
-# when classes of components are initialized, we pass a list with the time steps
-# that are reported. These are defined here. In principle for each component
-# a different set of time steps can be reported, by just passing another list
-# but this version uses three different ones
-
-# definition for components were all timesteps should be reported
-timeStepsToReportAll = list(range(1, cfg.numberOfTimeSteps + 1, 1))
-
-# used for discharge only
-timeStepsToReportRqs = list(range(20, cfg.numberOfTimeSteps + 1, 20))
-
-# definition for components were a subset of timesteps should be reported
-timeStepsToReportSome = list(range(100, cfg.numberOfTimeSteps + 1, 100))
-
-# switch to report for locations as small numpy files
-# mainly used for particle filtering
-doReportComponentsDynamicAsNumpy = False
-
-# when True, a particle filtering run is done
-# first time users should have this False
-filtering = False
-
-# selects whether a single, given, value is used for a number of parameters
-# or whether a realization for that parameters is drawn
-# first time users will use a single, fixed value for these parameters, so
-# use False and search on createRealizations in the script to see which
-# parameters are defined like this
-createRealizations = False
-
-# switch to swap parameter values between two catchments
-# first time users will need to set this to False
-swapCatchments = False
-
-# when True, one can read a set of parameters for all Monte Carlo realizations
-# from disk (e.g. representing probability distributions from a calibration)
-# first time users should have a False here
-readDistributionOfParametersFromDisk = False
-
-# switch to define which set of variables are reported
-# either 'full' or 'filtering'. These are passed to the class of a component
-# where it the variables that are reported can be defined, i.e. either full or filtering
-# early users will always use full
-setOfVariablesToReport = 'full'
-#setOfVariablesToReport = 'filtering'
 
 # only for advanced users
 # uncomment following line and comment second line in case of particle filtering
 # first time users should use class CatchmentModel(DynamicModel,MonteCarloModel):
 # in case of particle filtering, CHANGE ALSO TIMESERIES FILE FOR SCENARIOS!!!!!!!!!
-# class CatchmentModel(DynamicModel,MonteCarloModel,ParticleFilterModel):
-
-
-
-
+# class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel, pcrfw.ParticleFilterModel):
 
 
 class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
@@ -96,7 +43,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     pcrfw.DynamicModel.__init__(self)
     pcrfw.MonteCarloModel.__init__(self)
     pcr.setclone(cfg.cloneString)
-    if filtering:
+    if cfg.filtering:
       pcrfw.ParticleFilterModel.__init__(self)
 
   def premcloop(self):
@@ -246,7 +193,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.reportComponentsDynamic()
     self.reportRandomParametersDynamic()
     self.printComponentsDynamic()
-    if doReportComponentsDynamicAsNumpy:
+    if cfg.doReportComponentsDynamicAsNumpy:
       self.reportComponentsDynamicAsNumpy()
 
     #self.checkBudgets(self.currentSampleNumber(), self.currentTimeStep())
@@ -258,12 +205,12 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.initializeTime(cfg.startTimeYearValue, cfg.startTimeMonthValue, cfg.startTimeDayValue, self.timeStepDuration) # needed in case of forking, else the instances have been deleted
     self.createInstancesInitial() # needed in case of forking, else the instances have been deleted
 
-    if doReportComponentsDynamicAsNumpy:
+    if cfg.doReportComponentsDynamicAsNumpy:
       self.reportAsNumpyComponentsPostmcloop()
 
   def createInstancesPremcloop(self):
     if cfg.with_shading:
-      self.d_shading = shading.Shading(self.dem, cfg.latitudeOfCatchment, cfg.longitudeOfCatchment, cfg.timeZone, 1, timeStepsToReportRqs, setOfVariablesToReport)
+      self.d_shading = shading.Shading(self.dem, cfg.latitudeOfCatchment, cfg.longitudeOfCatchment, cfg.timeZone, 1, cfg.timeStepsToReportRqs, cfg.shading_report_rasters)
       # print('no optimization of shading')
 
 
@@ -271,7 +218,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     import generalfunctions
 
 
-    if readDistributionOfParametersFromDisk:
+    if cfg.readDistributionOfParametersFromDisk:
       path = '/home/derek/tmp/'
       maximumInterceptionCapacityPerLAI = pcr.scalar(path + pcrfw.generateNameS('RPic', self.currentSampleNumber()) + '.map')
       ksat = pcr.scalar(path + pcrfw.generateNameS('RPks', self.currentSampleNumber()) + '.map')
@@ -280,22 +227,22 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       multiplierMaxStomatalConductance = pcr.scalar(path + pcrfw.generateNameS('RPmm', self.currentSampleNumber()) + '.map')
     else:
       maximumInterceptionCapacityPerLAI = generalfunctions.areauniformBounds(
-                                  0.0001, 0.0005, pcr.nominal(1), pcr.scalar(cfg.maximumInterceptionCapacityValue), createRealizations)
+                                  0.0001, 0.0005, pcr.nominal(1), pcr.scalar(cfg.maximumInterceptionCapacityValue), cfg.createRealizations)
       ksat = generalfunctions.areauniformBounds(
-                                  0.025, 0.05, pcr.nominal(1), pcr.scalar(cfg.ksatValue), createRealizations)
+                                  0.025, 0.05, pcr.nominal(1), pcr.scalar(cfg.ksatValue), cfg.createRealizations)
       regolithThicknessHomogeneous = generalfunctions.areauniformBounds(
-                                  1.0, 3.5, cfg.areas, pcr.scalar(cfg.regolithThicknessHomogeneousValue), createRealizations)
+                                  1.0, 3.5, cfg.areas, pcr.scalar(cfg.regolithThicknessHomogeneousValue), cfg.createRealizations)
       saturatedConductivityMetrePerDay = generalfunctions.mapuniformBounds(
-                                  25.0, 40.0, pcr.scalar(cfg.saturatedConductivityMetrePerDayValue), createRealizations)
+                                  25.0, 40.0, pcr.scalar(cfg.saturatedConductivityMetrePerDayValue), cfg.createRealizations)
       multiplierMaxStomatalConductance = generalfunctions.mapuniformBounds(
-                                  0.8, 1.1, pcr.scalar(cfg.multiplierMaxStomatalConductanceValue), createRealizations)
+                                  0.8, 1.1, pcr.scalar(cfg.multiplierMaxStomatalConductanceValue), cfg.createRealizations)
 
-    if swapCatchments:
+    if cfg.swapCatchments:
       regolithThicknessHomogeneous = generalfunctions.swapValuesOfTwoRegions(cfg.areas, regolithThicknessHomogeneous, True)
 
     self.d_randomparameters = randomparameters.RandomParameters(
-                    timeStepsToReportRqs,
-                    setOfVariablesToReport,
+                    cfg.timeStepsToReportRqs,
+                    cfg.randomparameters_report_rasters,
                     maximumInterceptionCapacityPerLAI,
                     ksat,
                     regolithThicknessHomogeneous,
@@ -306,8 +253,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # class for exchange variables in initial and dynamic
     # introduced to make filtering possible
     self.d_exchangevariables = exchangevariables.ExchangeVariables(
-                                    timeStepsToReportSome,
-                                    setOfVariablesToReport,
+                                    cfg.timeStepsToReportSome,
+                                    cfg.exchange_report_rasters,
                                     )
 
     ################
@@ -319,7 +266,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     initialInterceptionStore = pcr.scalar(0.000001)
     leafAreaIndex = pcr.scalar(cfg.leafAreaIndexValue)
 
-    if swapCatchments:
+    if cfg.swapCatchments:
       leafAreaIndex = generalfunctions.swapValuesOfTwoRegions(cfg.areas, leafAreaIndex, True)
     gapFraction = pcr.exp(-0.5 * leafAreaIndex)            # equation 40 in Brolsma et al 2010a
     maximumInterceptionStore = maximumInterceptionCapacityPerLAI * leafAreaIndex
@@ -330,8 +277,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                     maximumInterceptionStore,
                                     gapFraction,
                                     self.timeStepDurationHours,
-                                    timeStepsToReportSome,
-                                    setOfVariablesToReport)
+                                    cfg.timeStepsToReportSome,
+                                    cfg.interception_report_rasters)
 
     #################
     # surface store #
@@ -343,8 +290,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                         initialSurfaceStore,
                         maxSurfaceStore,
                         self.timeStepDurationHours,
-                        timeStepsToReportSome,
-                        setOfVariablesToReport)
+                        cfg.timeStepsToReportSome,
+                        cfg.surfacestore_report_rasters)
 
     ################
     # infiltration #
@@ -360,12 +307,12 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # by pcrcalc 'mergeInitialMoistureContentFraction=Gs000008.761/rts00008.761'
     # note that I also changed the name for the initial soil moisture as a fraction
     initialSoilMoistureFractionFromDisk = pcr.scalar(cfg.initialSoilMoistureFractionFromDiskValue)
-    if swapCatchments:
+    if cfg.swapCatchments:
       initialSoilMoistureFractionFromDisk = generalfunctions.swapValuesOfTwoRegions(cfg.areas, initialSoilMoistureFractionFromDisk, True)
 
     # initial soil moisture as a fraction should not be above soil porosity as a fraction, just a check
     soilPorosityFraction = pcr.scalar(cfg.soilPorosityFractionValue)
-    if swapCatchments:
+    if cfg.swapCatchments:
       soilPorosityFraction = generalfunctions.swapValuesOfTwoRegions(cfg.areas, soilPorosityFraction, True)
     initialSoilMoistureFraction = pcr.min(soilPorosityFraction, initialSoilMoistureFractionFromDisk)
     hf = pcr.scalar(-0.0000001)
@@ -375,8 +322,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                     ksat,
                                     hf,
                                     self.timeStepDurationHours,
-                                    timeStepsToReportSome,
-                                    setOfVariablesToReport)
+                                    cfg.timeStepsToReportSome,
+                                    cfg.infiltration_report_rasters)
 
     ####################
     # subsurface water #
@@ -391,16 +338,16 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.multiplierWiltingPoint = pcr.scalar(1.0)
     limitingPointFraction = pcr.scalar(cfg.limitingPointFractionValue)
 
-    if swapCatchments:
+    if cfg.swapCatchments:
       limitingPointFraction = generalfunctions.swapValuesOfTwoRegions(cfg.areas, limitingPointFraction, True)
     mergeWiltingPointFractionFS = pcr.scalar(cfg.mergeWiltingPointFractionFSValue)
-    if swapCatchments:
+    if cfg.swapCatchments:
       mergeWiltingPointFractionFS = generalfunctions.swapValuesOfTwoRegions(cfg.areas, mergeWiltingPointFractionFS, True)
     wiltingPointFractionNotChecked = mergeWiltingPointFractionFS * self.multiplierWiltingPoint
     wiltingPointFraction = pcr.min(wiltingPointFractionNotChecked, limitingPointFraction)
 
     fieldCapacityFraction = pcr.scalar(cfg.fieldCapacityFractionValue)
-    if swapCatchments:
+    if cfg.swapCatchments:
       fieldCapacityFraction = generalfunctions.swapValuesOfTwoRegions(cfg.areas, fieldCapacityFraction, True)
 
     self.d_subsurfaceWaterOneLayer = subsurfacewateronelayer.SubsurfaceWaterOneLayer(
@@ -414,8 +361,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                    limitingPointFraction,
                                    saturatedConductivityMetrePerDay,
                                    self.timeStepDurationHours,
-                                   timeStepsToReportSome,
-                                   setOfVariablesToReport)
+                                   cfg.timeStepsToReportSome,
+                                   cfg.subsurface_report_rasters)
 
 
     ##########
@@ -425,23 +372,23 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.d_runoffAccuthreshold = runoffaccuthreshold.RunoffAccuthreshold(
                                self.ldd,
                                self.timeStepDurationHours,
-                               timeStepsToReportRqs,
-                               setOfVariablesToReport)
+                               cfg.timeStepsToReportRqs,
+                               cfg.runoff_report_rasters)
 
     ######################
     # evapotranspiration #
     ######################
 
     albedo = pcr.scalar(cfg.albedoValue)
-    if swapCatchments:
+    if cfg.swapCatchments:
       albedo = generalfunctions.swapValuesOfTwoRegions(cfg.areas, albedo, True)
 
     maxStomatalConductance = pcr.scalar(cfg.maxStomatalConductanceValue) * multiplierMaxStomatalConductance
-    if swapCatchments:
+    if cfg.swapCatchments:
       maxStomatalConductance = generalfunctions.swapValuesOfTwoRegions(cfg.areas, maxStomatalConductance, True)
 
     vegetationHeight = pcr.scalar(cfg.vegetationHeightValue)
-    if swapCatchments:
+    if cfg.swapCatchments:
       vegetationHeight = generalfunctions.swapValuesOfTwoRegions(cfg.areas, vegetationHeight, True)
     self.d_evapotranspirationPenman = evapotranspirationpenman.EvapotranspirationPenman(
                                          self.timeStepDurationHours,
@@ -449,8 +396,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                          maxStomatalConductance,
                                          vegetationHeight,
                                          leafAreaIndex,
-                                         timeStepsToReportSome,
-                                         setOfVariablesToReport)
+                                         cfg.timeStepsToReportSome,
+                                         cfg.evapotrans_report_rasters)
 
 
   def reportComponentsDynamic(self):
@@ -500,7 +447,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                  self.d_randomparameters
                                 ]
     for component in componentsToReportAsNumpy:
-      component.reportAsNumpyPostmcloop(range(1, nrOfSamples + 1), range(1, cfg.numberOfTimeSteps + 1))
+      component.reportAsNumpyPostmcloop(range(1, cfg.nrOfSamples + 1), range(1, cfg.numberOfTimeSteps + 1))
 
 
   def reportRandomParametersDynamic(self):
@@ -643,11 +590,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     for filename in glob.glob(str(self.currentSampleNumber()) + '/stateVar/*/*'):
       os.remove(filename)
 
-if filtering:
+if cfg.filtering:
   import generalfunctions
   myModel = CatchmentModel()
   dynamicModel = pcrfw.DynamicFramework(myModel, cfg.numberOfTimeSteps)
-  mcModel = pcrfw.MonteCarloFramework(dynamicModel, nrOfSamples)
+  mcModel = pcrfw.MonteCarloFramework(dynamicModel, cfg.nrOfSamples)
   mcModel.setForkSamples(True, 10)
   #pfModel = SequentialImportanceResamplingFramework(mcModel)
   pfModel = pcrfw.ResidualResamplingFramework(mcModel)
@@ -666,6 +613,6 @@ if filtering:
 else:
   myModel = CatchmentModel()
   dynamicModel = pcrfw.DynamicFramework(myModel, cfg.numberOfTimeSteps)
-  mcModel = pcrfw.MonteCarloFramework(dynamicModel, nrOfSamples)
+  mcModel = pcrfw.MonteCarloFramework(dynamicModel, cfg.nrOfSamples)
   mcModel.setForkSamples(True, 10)
   mcModel.run()

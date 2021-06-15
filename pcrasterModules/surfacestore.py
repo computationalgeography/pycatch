@@ -34,17 +34,15 @@ class SurfaceStore:
     # budget
     self.actualAdditionCum = pcr.scalar(0.0)
 
+    self.output_mapping = {
+                            'Ss': self.store,
+                            'Sc': self.changeFlux
+                          }
+
 
   def reportAsMaps(self, sample, timestep):
     # reports
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                                'Ss': self.store,
-                                'Sc': self.changeFlux 
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
@@ -99,7 +97,7 @@ class SurfaceStore:
 
   def budgetCheck(self, sample, timestep):
     # NOTE this is only valid if addition,subtraction and lateral flow are invoked ONCE EACH TIME STEP
-    # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be 
+    # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be
     # comparable with other budgets.
     # note self.changeAmount can be positive or negative and thus self.actualAdditionCum, too
     self.actualAdditionCum = self.actualAdditionCum + self.changeAmount

@@ -15,7 +15,7 @@ import component
 # functions are always PCRaster types
 
 class InfiltrationGreenAndAmpt(component.Component):
-  def __init__(self, porosityFraction, initialMoistureContentFraction, saturatedConductivityFlux, 
+  def __init__(self, porosityFraction, initialMoistureContentFraction, saturatedConductivityFlux,
                suctionHead, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
 
     # init only for suspend and resume in filter
@@ -42,18 +42,16 @@ class InfiltrationGreenAndAmpt(component.Component):
     self.initialStore = pcr.scalar(0.0)
     self.actualAdditionCum = pcr.scalar(0.0)
 
+    self.output_mapping = {
+                            'Ii': self.actualInfiltrationFlux,
+                            'Ij': self.potentialInfiltrationFlux,
+                            'Is': self.store,
+                            'Iks': self.saturatedConductivityFlux
+                          }
+
   def reportAsMaps(self, sample, timestep):
     # reports
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                               'Ii': self.actualInfiltrationFlux,
-                               'Ij': self.potentialInfiltrationFlux,
-                               'Is': self.store,
-                               'Iks': self.saturatedConductivityFlux
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
@@ -98,7 +96,7 @@ class InfiltrationGreenAndAmpt(component.Component):
 
   def budgetCheck(self, sample, timestep):
     # NOTE this is only valid if addition,subtraction are invoked ONCE EACH TIME STEP
-    # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be 
+    # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be
     # comparable with other budgets.
     self.actualAdditionCum = pcr.scalar(self.actualAdditionCum + self.actualInfiltrationFlux * self.timeStepDuration)
     self.increaseInStore = self.store - self.initialStore

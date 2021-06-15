@@ -52,11 +52,7 @@ class EvapotranspirationPenman(component.Component):
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
 
-  def reportAsMaps(self, sample, timestep):
-    # reports
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
+    self.output_mapping = {
                             'Ep': self.potentialEvapotranspirationFlux,
                             # 'gs': self.maxStomatalConduc,
                             # 'ra': self.aerodynamicRes,
@@ -65,9 +61,11 @@ class EvapotranspirationPenman(component.Component):
                             # 'Ecl': self.cloudFactor,
                             # 'Ecs': self.clearSkyIncomingShortwaveRadiationFlatSurface,
                             # 'Eis': self.incomingShortwaveRadiationFlatSurface
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+                           }
+
+  def reportAsMaps(self, sample, timestep):
+    # reports
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
