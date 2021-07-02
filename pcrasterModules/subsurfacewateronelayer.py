@@ -38,7 +38,7 @@ class SubsurfaceWaterOneLayer(component.Component):
               initialSoilMoistureFraction,
               soilPorosityFraction,
               wiltingPointFraction,
-              fieldCapacityFraction, 
+              fieldCapacityFraction,
               limitingPointFraction,
               saturatedConductivityMetrePerDay,
               timeStepDuration,
@@ -93,7 +93,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.initialSoilMoistureThick = self.initialSoilMoistureFraction * self.regolithThickness
     self.soilMoistureThick = self.initialSoilMoistureThick
 
-    # values independent of regolith thickness 
+    # values independent of regolith thickness
     self.saturatedConductivityMetrePerDay = saturatedConductivityMetrePerDay
     self.timeStepDuration = timeStepDuration
     self.timeStepsToReport = timeStepsToReport
@@ -107,25 +107,23 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.lateralFlowFluxAmountCum = pcr.scalar(0)
     self.upwardSeepageCum = pcr.scalar(0)
 
-
-  def reportAsMaps(self, sample, timestep):
-    # reports
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
+    self.output_mapping = {
                                 'Gs': self.soilMoistureThick,
                                 # 'Gad': self.maximumAdditionThick,
-                                'Go': self.actualAbstractionFlux,  
-                                # 'Gi': self.actualAdditionFlux,    
+                                'Go': self.actualAbstractionFlux,
+                                # 'Gi': self.actualAdditionFlux,
                                 # 'Gq': self.lateralFlowFluxCubicMetresPerHour,
                                 # 'Gwp': self.fWaterPotential,
                                 # 'rts': self.regolithThickness,
                                 # 'Gks': self.saturatedConductivityMetrePerDay
                                 'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
                                 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+                           }
+
+
+  def reportAsMaps(self, sample, timestep):
+    # reports
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
@@ -179,15 +177,15 @@ class SubsurfaceWaterOneLayer(component.Component):
 #      self.variablesToReport = {'Gx': self.upwardSeepageFlux,
 #                                'Gs': self.soilMoistureThick,
 #                                #'Gad': self.maximumAdditionThick,
-#                                'Go': self.actualAbstractionFlux,  
-#                                #'Gi': self.actualAdditionFlux,    
+#                                'Go': self.actualAbstractionFlux,
+#                                #'Gi': self.actualAdditionFlux,
 #                                #'Gq': self.lateralFlowFluxCubicMetresPerHour,
 #                                #'Gwp': self.fWaterPotential,
 #                                #'rts': self.regolithThickness,
 #                                #'Gks': self.saturatedConductivityMetrePerDay
 #                                'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
 #                                'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
-#                                 } 
+#                                 }
 #    if self.setOfVariablesToReport == 'filtering':
 #      self.variablesToReport = {
 #                                'Gsf': self.soilMoistureFraction
@@ -302,7 +300,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.calculateSoilMoistureMinusWiltingPointThick()
     self.lateralFlowFluxAmount = pcr.min(self.lateralFlowDarcyFluxAmount, self.soilMoistureMinusWiltingPointThick)
     self.lateralFlowFluxCubicMetresPerHour = self.amountToFlux(self.lateralFlowFluxAmount) * pcr.cellarea()
-    
+
   def lateralFlow(self):
     self.calculateLateralFlow()
     self.soilMoistureThick = self.soilMoistureThick - self.lateralFlowFluxAmount + pcr.upstream(self.ldd, self.lateralFlowFluxAmount)
@@ -331,7 +329,7 @@ class SubsurfaceWaterOneLayer(component.Component):
 
   def totalSaturatedThickInUpstreamArea(self):
     self.totalSaturatedThickInUpstreamAreaCubicMetre = pcr.accuflux(self.ldd, self.saturatedLayerThick) * self.cellArea
-  
+
   def getFWaterPotential(self):
     # calculates the reduction factor (0-1) for the stomatal conductance, i.e. stomatal
     # conductance in Penman will be the maximum stomatal conductance multiplied by
@@ -366,7 +364,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     return self.increaseInSubsurfaceStorage, self.lateralFlowFluxAmountCum, self.actualAbstractionCum
 
 #####
-# adjusting regolith thickness    
+# adjusting regolith thickness
 #####
 
   def possiblyAdjustSoilMoistureThickWhenRegolithThicknessChanges(self):
@@ -375,7 +373,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     amountOfMoistureThickNetAdded = amountOfMoistureThickAdded - amountOfMoistureThickRemoved
     self.soilMoistureThick = pcr.min(pcr.max(self.soilMoistureThick, self.wiltingPointThick), self.soilPorosityThick)
     return amountOfMoistureThickNetAdded
-  
+
   def updateRegolithThickness(self, newRegolithThickness):
      self.convertFractionsToThickness(newRegolithThickness, self.soilPorosityFraction, self.wiltingPointFraction,
                                   self.limitingPointFraction, self.fieldCapacityFraction)
@@ -390,9 +388,9 @@ class SubsurfaceWaterOneLayer(component.Component):
 
   def calculateSoilMoistureFraction(self):
     self.soilMoistureFraction = self.soilMoistureThick / self.regolithThickness
-    
 
-    
+
+
 # ldd='ldd.map'
 # demOfBedrockTopography='mdtpaz4.map'
 # regolithThickness=pcr.scalar(10.0)
@@ -410,7 +408,7 @@ class SubsurfaceWaterOneLayer(component.Component):
 #              initialSoilMoistureFraction,
 #              soilPorosityFraction,
 #              wiltingPointFraction,
-#              fieldCapacityFraction, 
+#              fieldCapacityFraction,
 #              saturatedConductivityMetrePerDay,
 #              timeStepDuration)
 
@@ -452,7 +450,7 @@ class SubsurfaceWaterOneLayer(component.Component):
 #                  initialSoilMoistureFraction,
 #                  soilPorosityFraction,
 #                  wiltingPointFraction,
-#                  fieldCapacityFraction, 
+#                  fieldCapacityFraction,
 #                  saturatedConductivityMetrePerDay,
 #                  timeStepDuration)
 #
