@@ -1,5 +1,9 @@
 Changelog and remarks
 
+## 6 July 2021
+
+Test for github
+
 ## 19 May 2021
 
 Added main_weekly.py to the repo
