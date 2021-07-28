@@ -1,6 +1,7 @@
 from pcraster import *
 import sys
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in h
@@ -13,7 +14,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class SoilWashMMF:
+class SoilWashMMF(component.Component):
   def __init__(self,ldd,dem,rainstormDuration,plantHeightMetres,detachabilityOfSoilRaindrops,stoneCoverFraction, \
                detachabilityOfSoilRunoff,vegetationCoverOfSoilFraction, manningsN,soilPorosity, \
                timeStepsToReport,setOfVariablesToReport):
@@ -41,6 +42,9 @@ class SoilWashMMF:
     self.transportCapacityVolumeFraction = scalar(0)
     self.streamPowerCmPerSec = scalar(0)
     self.accuDeposition=scalar(0)
+    self.lateralFluxKg = scalar(0)
+    self.totalDetachKgPerCell = scalar(0)
+    self.transportCapacityKgPerCell = scalar(0)
     self.specificWeightRockKgPerCubicMetre=2650.0
     # conversion kg rock to height soil
     volumeRockMaterialCubicMetresOfOneKiloRock=1.0/self.specificWeightRockKgPerCubicMetre
@@ -48,29 +52,20 @@ class SoilWashMMF:
     self.heightSoilOfOneKiloRock=volumeSoilOfOneKiloRock/cellarea()
     report(self.heightSoilOfOneKiloRock,'hsook')
 
+    self.output_mapping = {
+                           'Wde': self.netDepositionKgPerCell,
+                           'Wdm': self.netDepositionMetre,
+                           'Wfl': self.lateralFluxKg,
+                           'Wdt': self.totalDetachKgPerCell,
+                           'Wtc': self.transportCapacityKgPerCell,
+                           'Wtv': self.transportCapacityVolumeFraction,
+                           'Wsp': self.streamPowerCmPerSec,
+                           'Wac': self.accuDeposition
+                          }
 
-  
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                                 'Wde': self.netDepositionKgPerCell,
-                                 'Wdm': self.netDepositionMetre,
-                                 'Wfl': self.lateralFluxKg,
-                                 'Wdt': self.totalDetachKgPerCell,
-                                 'Wtc': self.transportCapacityKgPerCell,
-                                 'Wtv': self.transportCapacityVolumeFraction,
-                                 'Wsp': self.streamPowerCmPerSec,
-                                 'Wac': self.accuDeposition
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = {
-                                 'Wac': self.accuDeposition
-                                }
-
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def updateStoneOrVegetationCover(self,vegetationCover):
     self.stoneOrVegetationCover=min(vegetationCover+self.stoneCoverFraction,1.0)

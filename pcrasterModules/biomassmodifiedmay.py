@@ -1,7 +1,9 @@
 from pcraster import *
-import sys, generalfunctions
+import sys
+import generalfunctions
 from collections import deque
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in hours
@@ -13,7 +15,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class BiomassModifiedMay:
+class BiomassModifiedMay(component.Component):
   def __init__(self, \
                biomass, \
                waterUseEfficiency, \
@@ -48,7 +50,7 @@ class BiomassModifiedMay:
     '''
 
     self.waterUseEfficiency=waterUseEfficiency
-    self.biomass=biomass
+    self.biomass=scalar(biomass)   # type definition seems to be required for reporting as maps
     self.maintenanceRate=maintenanceRate
     self.runoff=runoff
     self.gamma=gamma
@@ -56,6 +58,13 @@ class BiomassModifiedMay:
     self.dispersion=dispersion
     self.sdOfNoise=sdOfNoise
     self.LAIPerBiomass=LAIPerBiomass
+    self.LAI=scalar(0)
+    self.growth=scalar(0)
+    self.maintenance=scalar(0)
+    self.grazing=scalar(0)
+    self.diffusion=scalar(0)
+    self.noise=scalar(0)
+    self.netGrowth=scalar(0)
     #self.minimumAllowedBiomass=scalar(0.00000001)
     # let op higher minimum allowd biomass
     print('# let op higher minimum allowd biomass')
@@ -65,34 +74,20 @@ class BiomassModifiedMay:
     self.setOfVariablesToReport=setOfVariablesToReport
     self.numberOfNeighbours=window4total(spatial(scalar(1)))
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                                'Xs': self.biomass,
-                                'Xla': self.LAI,
-                                'Xg': self.growth,
-                                'Xm': self.maintenance,
-                                'Xgr': self.grazing,
-                                'Xdi': self.diffusion,
-                                'Xno': self.noise,
-                                'Xng': self.netGrowth
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = {
-                                'Xs': self.biomass
-                                #'Xme': self.maintenanceErosion,
-                                #'Xm': self.maintenance,
-                                #'Xg': self.growth,
-                                #'Xgr': self.grazing,
-                                #'Xng': self.netGrowth,
-                                #'Xgp': self.growthPart
-                                }
+    self.output_mapping = {
+                          'Xs': self.biomass,
+                          'Xla': self.LAI,
+                          'Xg': self.growth,
+                          'Xm': self.maintenance,
+                          'Xgr': self.grazing,
+                          'Xdi': self.diffusion,
+                          'Xno': self.noise,
+                          'Xng': self.netGrowth
+                           }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
-
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def growthTerm(self,actualEvapotranspirationFlux):
     '''

@@ -1,5 +1,6 @@
 from pcraster import *
 from pcraster.framework import *
+import component
 
 # Notes:
 # time step duration in h
@@ -12,7 +13,7 @@ from pcraster.framework import *
 
 #setclone('clone.map')
 
-class EvapotranspirationSimple:
+class EvapotranspirationSimple(component.Component):
   def __init__(self, timeStepDuration, beta, maximumEvapotranspirationFlux, timeStepsToReport, setOfVariablesToReport):
     '''
     beta, half saturation constant relating transpiration to vegetation density (kg/m2), typical 7 kg/m2
@@ -26,20 +27,17 @@ class EvapotranspirationSimple:
     self.maximumEvapotranspirationFlux=maximumEvapotranspirationFlux
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
+    self.potentialEvapotranspirationFlux=scalar(0) 
+    self.actualEvapotranspirationFlux=scalar(0)
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                            'Ep': self.potentialEvapotranspirationFlux
-                            #'Ea': self.actualEvapotranspirationFlux
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = {}
+    self.output_mapping = {
+                           'Ep': self.potentialEvapotranspirationFlux, 
+                           'Ea': self.actualEvapotranspirationFlux
+                           }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def potentialEvapotranspiration(self,fWaterPotential,biomass):
     self.potentialEvapotranspirationFlux=fWaterPotential*self.maximumEvapotranspirationFlux* \

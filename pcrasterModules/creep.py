@@ -1,6 +1,7 @@
 from pcraster import *
 import sys, generalfunctions
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in h
@@ -13,7 +14,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class Creep:
+class Creep(component.Component):
   def __init__(self,dem,timeStepDuration,diffusion, timeStepsToReport,setOfVariablesToReport):
     import generalfunctions
     self.dem=dem
@@ -29,22 +30,17 @@ class Creep:
     self.correctedFactor=scalar(0)
     self.velocityMetrePerYear=scalar(0)
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                               'Ds': self.soilThickness,
-                               'Dou': self.outflow,
-                               'Dbo': self.flowOverBoundaries,
-                               'Dco': self.correctedFactor,
-                               'Dve': self.velocityMetrePerYear
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+    self.output_mapping = {
+                           'Ds': self.soilThickness,
+                           'Dou': self.outflow,
+                           'Dbo': self.flowOverBoundaries,
+                           'Dco': self.correctedFactor,
+                           'Dve': self.velocityMetrePerYear
+                             }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
 
   def gradient(self):

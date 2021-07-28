@@ -1,6 +1,7 @@
 from pcraster import *
 import sys, generalfunctions
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in h
@@ -13,7 +14,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class BedrockWeathering:
+class BedrockWeathering(component.Component):
   def __init__(self,weatheringRateBareBedrock,weatheringExponentParameter, timeStepsToReport,setOfVariablesToReport):
     '''
     weatheringRateBareBedrock in m/year
@@ -25,21 +26,13 @@ class BedrockWeathering:
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                                'Cwe': self.weatheringMetrePerYear,
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = {
-                                'Cwe': self.weatheringMetrePerYear,
-                                }
+    self.output_mapping = {
+                          'Cwe': self.weatheringMetrePerYear,
+                          }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
-
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def weatheringRate(self,soilDepthMetres):
     self.weatheringMetrePerYear=self.weatheringRateBareBedrock * exp(-self.weatheringExponentParameter * soilDepthMetres)

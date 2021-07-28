@@ -1,6 +1,7 @@
 from pcraster import * 
 import sys
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in years
@@ -13,7 +14,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class RegolithDemAndBedrock:
+class RegolithDemAndBedrock(component.Component):
   def __init__(self, dem, regolithThickness, timeStepDuration, timeStepsToReport,setOfVariablesToReport):
 
     # real inits
@@ -35,30 +36,17 @@ class RegolithDemAndBedrock:
     # budget check
     # needs to be written
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      netDepSinceStart=self.dem-self.initialDem
-      meanRegolithThickness=maptotal(self.regolithThickness)/(maptotal(scalar(defined(self.regolithThickness))))
-      self.variablesToReport = {
-                               'Ast': self.regolithThickness,
-                               'Adb': self.demOfBedrock,
-                               'Ade': self.dem,
-                               'Abl': self.bedrockLdd,
-                               'Asl': self.surfaceLdd,
-                               'And': netDepSinceStart,
-                               'Asm': meanRegolithThickness
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = {
-                               #'Asl': self.surfaceLdd,
-                               'As': self.regolithThickness,
-                               'Ade': self.dem
-                                 }
+    self.output_mapping = {
+                          'Ast': self.regolithThickness,
+                          'Adb': self.demOfBedrock,
+                          'Ade': self.dem,
+                          'Abl': self.bedrockLdd,
+                          'Asl': self.surfaceLdd,
+                           }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def amountToFlux(self,amount):
     flux=amount/self.timeStepDuration

@@ -7,6 +7,7 @@ import glob
 sys.path.append("../pycatch/pcrasterModules/")
 
 # from PCRaster modules
+import generalfunctions
 import datetimePCRasterPython
 import interceptionuptomaxstore
 import surfacestore
@@ -20,13 +21,8 @@ import regolith
 import bedrockweathering
 import evapotranspirationsimple
 import biomassmodifiedmay
-import random
-import generalfunctions
 import baselevel
 import creep
-
-# from this folder
-import component
 
 import configuration_weekly as cfg
 
@@ -551,7 +547,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                     baselevelRise, \
                     self.timeStepDuration/(365.0*24.0), \
                     timeStepsToReportAll, \
-                    cfg.setOfVariablesToReport)
+                    cfg.baselevel_report_rasters)
 
     weatheringRateBareBedrock=0.0005
     weatheringExponentParameter=4.0
@@ -559,7 +555,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                              weatheringRateBareBedrock, \
                              weatheringExponentParameter, \
                              timeStepsToReportAll,\
-                             cfg.setOfVariablesToReport)
+                             cfg.bedrockweathering_report_rasters)
     steadyStateSoilDepth=self.d_bedrockweathering.steadyStateSoilDepth(0-baselevelRise)
     self.report(steadyStateSoilDepth,'sssd')
 
@@ -574,7 +570,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                  regolithThickness, \
                                  self.timeStepDurationRegolithInYears, \
                                  timeStepsToReportAll, \
-                                 cfg.setOfVariablesToReport)
+                                 cfg.regolith_report_rasters)
 
     regolithThickness,demOfBedrock,dem,bedrockLdd,surfaceLdd=self.d_regolithdemandbedrock.getRegolithProperties()
     report(regolithThickness,'regIni.map')
@@ -610,7 +606,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                  LAIPerBiomass, \
                  self.timeStepDuration, \
                  timeStepsToReportAll, \
-                 cfg.setOfVariablesToReport)
+                 cfg.biomassmodifiedmay_report_rasters)
 
     # precipitation
     # scenario: original
@@ -740,7 +736,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                     beta, \
                                     maximumEvapotranspirationFlux, \
                                     timeStepsToReportAll, \
-                                    cfg.setOfVariablesToReport) \
+                                    cfg.evapotranspirationsimple_report_rasters) \
 
     # runoff
     self.d_runoffAccuthreshold=runoffaccuthreshold.RunoffAccuthreshold(
@@ -775,7 +771,8 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                               manningsN,
                                               soilPorosityFraction,
                                               timeStepsToReportAll,
-                                              cfg.setOfVariablesToReport)
+                                              cfg.soilwashMMF_report_rasters)
+
 
     # creep
     diffusion=0.01
@@ -784,24 +781,24 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                  self.timeStepDurationRegolithInYears, \
                  diffusion, \
                  timeStepsToReportAll, \
-                 cfg.setOfVariablesToReport)
+                 cfg.creep_report_rasters)
 
   def reportComponentsDynamic(self):
     components =[ \
                  self.d_exchangevariables, \
-                 #self.d_evapotranspirationSimple, \
-                 #self.d_regolithdemandbedrock, \
-                 #self.d_bedrockweathering,
-                 #self.d_baselevel, \
+                 self.d_evapotranspirationSimple, \
+                 self.d_regolithdemandbedrock, \
+                 self.d_bedrockweathering,
+                 self.d_baselevel, \
                  self.d_rainfalleventsfromgammadistribution , \
                  self.d_interceptionuptomaxstore, \
                  self.d_surfaceStore, \
                  self.d_infiltrationonlyksat, \
                  self.d_runoffAccuthreshold, \
-                 self.d_subsurfaceWaterOneLayer 
-                 #self.d_soilwashMMF, \
-                 #self.d_creep,
-                 #self.d_biomassModifiedMay
+                 self.d_subsurfaceWaterOneLayer, \
+                 self.d_soilwashMMF, \
+                 self.d_creep,
+                 self.d_biomassModifiedMay
                  ] 
 
     for component in components:

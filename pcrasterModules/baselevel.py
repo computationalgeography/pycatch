@@ -1,6 +1,7 @@
 from pcraster import * 
 import sys
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in years
@@ -10,7 +11,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class Baselevel:
+class Baselevel(component.Component):
   def __init__(self, areaWhereBaselevelIsSet, initialLevel, baseLevelRise, timeStepDuration, \
                timeStepsToReport, setOfVariablesToReport):
 
@@ -23,18 +24,13 @@ class Baselevel:
     self.setOfVariablesToReport=setOfVariablesToReport
     self.baselevel=ifthen(self.areaWhereBaselevelIsSet,self.initialLevel)
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                               'Ll': self.baselevel
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+    self.output_mapping = {
+                           'Ll': self.baselevel
+                          }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def getBaselevel(self,timeStep):
     '''
