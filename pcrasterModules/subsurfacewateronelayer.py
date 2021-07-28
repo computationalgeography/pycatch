@@ -1,6 +1,7 @@
 import pcraster as pcr
 import pcraster.framework as pcrfw
-import generalfunctions, component
+import generalfunctions
+import component
 
 # Notes:
 # time step duration in h

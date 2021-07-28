@@ -1,6 +1,7 @@
 import pcraster as pcr
 import pcraster.framework as pcrfw
 import generalfunctions
+import component
 
 
 # notes
@@ -15,7 +16,7 @@ import generalfunctions
 
 maxErrorInFluxesForErrorMessages = 0.00001
 
-class SurfaceStore:
+class SurfaceStore(component.Component):
   def __init__(self, initialStore, maxStore, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
 
     # init only for supsend and resume in filtering
@@ -39,9 +40,17 @@ class SurfaceStore:
                             'Sc': self.changeFlux
                           }
 
+#  def rasters_to_report(self, variables):
+#    # Returns dictionary with member variables
+#    result = {}
+#    for name in variables:
+#      try:
+#        result[name] = self.output_mapping[name]
+#      except KeyError as e:
+#        msg = f"Variable {e} is not available for report, use one of: {', '.join(list(self.output_mapping.keys()))}"
+#        raise KeyError(msg)
 
   def reportAsMaps(self, sample, timestep):
-    # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

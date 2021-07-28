@@ -14,7 +14,7 @@ import infiltrationonlyksat
 import subsurfacewateronelayer
 import runoffaccuthreshold
 import rainfalleventsfromgammadistribution
-import exchangevariables
+import exchangevariables_weekly
 import soilwashMMF
 import regolith
 import bedrockweathering
@@ -534,9 +534,9 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     # class for exchange variables in initial and dynamic
     # introduced to make filtering possible
     
-    self.d_exchangevariables=exchangevariables.ExchangeVariables( \
+    self.d_exchangevariables=exchangevariables_weekly.ExchangeVariables( \
                                     timeStepsToReportSome, \
-                                    cfg.setOfVariablesToReport, \
+                                    cfg.exchange_report_rasters
                                     )
 
     # base level
@@ -662,7 +662,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                                expectedRainfallIntensity, \
                                                gammaShapeParameter, \
                                                timeStepsToReportAll,
-                                               cfg.setOfVariablesToReport)
+                                               cfg.rainfalleventsfromgammadistribution_report_rasters)
 
 
     # interception
@@ -677,7 +677,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                     gapFraction, \
                                     durationOfRainstorm,
                                     timeStepsToReportAll,
-                                    cfg.setOfVariablesToReport)
+                                    cfg.interception_report_rasters)
 
     # surface store
     initialSurfaceStore=scalar(0.0)
@@ -687,7 +687,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                         maxSurfaceStore, \
                         durationOfRainstorm,
                         timeStepsToReportAll,
-                        cfg.setOfVariablesToReport)
+                        cfg.surfacestore_report_rasters)
 
     # infiltration
     bareSoilSaturatedConductivityFlux=scalar(0.0001)
@@ -702,7 +702,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                     biomassHalfSaturation, \
                                     durationOfRainstorm,  \
                                     timeStepsToReportAll, \
-                                    cfg.setOfVariablesToReport)
+                                    cfg.infiltration_report_rasters)
 
 
     # subsurface water
@@ -730,7 +730,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                    saturatedConductivityMetrePerDay,
                                    self.timeStepDurationHours,
                                    timeStepsToReportAll,
-                                   cfg.setOfVariablesToReport)
+                                   cfg.subsurface_report_rasters)
 
     # evapotranspiration
     beta=1.0
@@ -747,7 +747,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                surfaceLdd,
                                durationOfRainstorm,
                                timeStepsToReportAll,
-                               cfg.setOfVariablesToReport)
+                               cfg.runoff_report_rasters)
 
     # soilwash
     plantHeightMetres=5.0
@@ -788,24 +788,24 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
 
   def reportComponentsDynamic(self):
     components =[ \
-                 #self.d_exchangevariables, \
-                 self.d_evapotranspirationSimple, \
-                 self.d_regolithdemandbedrock, \
-                 self.d_bedrockweathering,
-                 self.d_baselevel, \
+                 self.d_exchangevariables, \
+                 #self.d_evapotranspirationSimple, \
+                 #self.d_regolithdemandbedrock, \
+                 #self.d_bedrockweathering,
+                 #self.d_baselevel, \
                  self.d_rainfalleventsfromgammadistribution , \
-                 #self.d_interceptionuptomaxstore, \     # DK has no report method
-                 #self.d_surfaceStore, \                 # DK has no report method
+                 self.d_interceptionuptomaxstore, \
+                 self.d_surfaceStore, \
                  self.d_infiltrationonlyksat, \
-                 #self.d_runoffAccuthreshold, \          # DK has no report method
-                 #self.d_subsurfaceWaterOneLayer, \      # DK has no report method
-                 self.d_soilwashMMF, \
-                 self.d_creep,
-                 self.d_biomassModifiedMay
+                 self.d_runoffAccuthreshold, \
+                 self.d_subsurfaceWaterOneLayer 
+                 #self.d_soilwashMMF, \
+                 #self.d_creep,
+                 #self.d_biomassModifiedMay
                  ] 
 
     for component in components:
-      component.report(self.currentSampleNumber(), self.currentTimeStep())
+      component.reportAsMaps(self.currentSampleNumber(), self.currentTimeStep())
 
 
   def printMemberVariables(self):

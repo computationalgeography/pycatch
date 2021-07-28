@@ -3,6 +3,7 @@ from pcraster import *
 from pcraster.framework import *
 import sys
 import random
+import component
 
 # notes
 # time step duration in h
@@ -16,7 +17,7 @@ import random
 # class needs to update store by itself
 # note that, by exception, rainfall store can be negative
 
-class RainfallEventsFromGammaDistribution:
+class RainfallEventsFromGammaDistribution(component.Component):
   def __init__(self, probabilityOfARainstorm, durationOfRainstorm, expectedRainfallIntensity, gammaShapeParameter, \
                timeStepsToReport,setOfVariablesToReport):
     '''Generates a random rainstorm event
@@ -24,6 +25,7 @@ class RainfallEventsFromGammaDistribution:
     durationOfRainstorm - hours
     expectedRainfallIntensity - metre per hour
     '''
+    self.rainfallFlux = scalar(0)
     self.probabilityOfARainstorm=probabilityOfARainstorm
     self.durationOfRainstorm=durationOfRainstorm
     self.expectedRainfallIntensity=expectedRainfallIntensity
@@ -32,20 +34,13 @@ class RainfallEventsFromGammaDistribution:
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      probRain=scalar(self.probabilityOfARainstorm)
-      self.variablesToReport = {
-                                'Pf': self.rainfallFlux,
-                                'Pp': probRain
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+    self.output_mapping = {
+                           'Pf': self.rainfallFlux,
+                          }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def setProbabilityOfARainstorm(self,probabilityOfARainstorm):
     self.probabilityOfARainstorm=probabilityOfARainstorm

@@ -254,7 +254,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # introduced to make filtering possible
     self.d_exchangevariables = exchangevariables.ExchangeVariables(
                                     cfg.timeStepsToReportSome,
-                                    cfg.exchange_report_rasters,
+                                    cfg.exchange_report_rasters
                                     )
 
     ################
@@ -406,7 +406,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     see also reportAsNumpyComponentsPostmcloop
     """
     components = [ \
-                 # self.d_exchangevariables, \
+                  self.d_exchangevariables, \
                  self.d_randomparameters, \
                  self.d_interceptionuptomaxstore, \
                  # self.d_surfaceStore, \

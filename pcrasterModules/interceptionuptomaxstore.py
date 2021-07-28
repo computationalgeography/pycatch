@@ -47,7 +47,6 @@ class InterceptionUpToMaxStore(component.Component):
 
 
   def reportAsMaps(self, sample, timestep):
-    # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

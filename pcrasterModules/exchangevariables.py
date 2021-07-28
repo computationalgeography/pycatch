@@ -1,8 +1,9 @@
 import pcraster as pcr
 import pcraster.framework as pcrfw
+import component
 
 
-class ExchangeVariables:
+class ExchangeVariables(component.Component):
   def __init__(self, timeStepsToReport, setOfVariablesToReport):
 
     # init for variables required for filtering only (suspend, resume)
@@ -23,9 +24,6 @@ class ExchangeVariables:
                                'Xmu': self.evapFromSoilMultiplier
                           }
 
-  def report(self, sample, timestep):
+  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
-
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        pcr.report(self.variablesToReport[variable], pcrfw.generateNameST(variable, sample, timestep))
+    self.reportMaps(sample, timestep)

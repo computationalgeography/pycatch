@@ -1,6 +1,7 @@
 from pcraster import * 
 import sys
 from pcraster.framework import *
+import component
 
 # notes
 # time step duration in h
@@ -13,7 +14,7 @@ from pcraster.framework import *
 # inputs of functions may be python types, return values of
 # functions are always PCRaster types
 
-class InfiltrationOnlyKsat:
+class InfiltrationOnlyKsat(component.Component):
   def __init__(self, saturatedConductivityFlux, bareSoilSaturatedConductivityFlux, \
                maxSaturatedConductivityFluxFromVegetation,biomassHalfSaturation, timeStepDuration,timeStepsToReport,setOfVariablesToReport):
 
@@ -37,20 +38,15 @@ class InfiltrationOnlyKsat:
     self.initialStore=scalar(0.0)
     self.actualAdditionCum=scalar(0.0)
 
-  def report(self,sample,timestep):
-    self.variablesToReport = {}
-    if self.setOfVariablesToReport == 'full':
-      self.variablesToReport = {
-                               'Ii': self.actualInfiltrationFlux,
-                               'Is': self.store,
-                               'Iks': self.saturatedConductivityFlux
-                                 }
-    if self.setOfVariablesToReport == 'filtering':
-      self.variablesToReport = { }
+    self.output_mapping = {
+                           'Ii': self.actualInfiltrationFlux,
+                           'Is': self.store,
+                           'Iks': self.saturatedConductivityFlux
+                          }
 
-    if timestep in self.timeStepsToReport:
-      for variable in self.variablesToReport:
-        report(self.variablesToReport[variable],generateNameST(variable, sample, timestep))
+  def reportAsMaps(self, sample, timestep):
+    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+    self.reportMaps(sample, timestep)
 
   def amountToFlux(self,amount):
     flux=amount/self.timeStepDuration
