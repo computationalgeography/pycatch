@@ -13,11 +13,14 @@ import component
 # functions are always PCRaster types
 
 class InterceptionUpToMaxStore(component.Component):
-  def __init__(self, ldd, initialStore, maximumStore, gapFraction, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
+  def __init__(self, ldd, initialStore, maximumStore, gapFraction, calculateUpstreamTotals, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
 
     # init only to run supsend and resume in filtering
     self.variablesToReport = {}
     self.variablesAsNumpyToReport = {}
+
+    # init for reporting
+    self.calculateUpstreamTotals = calculateUpstreamTotals
 
     # real inits
     self.ldd = ldd
@@ -41,8 +44,8 @@ class InterceptionUpToMaxStore(component.Component):
                                 'Vo': self.actualAbstractionFlux,
                                 'Vi': self.actualAdditionFlux,
                                 'Vgf': self.gapFraction,
-                                'Vms': self.maximumStore,
-                                'Vot': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
+                                'Vms': self.maximumStore
+                                #'Vot': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
                           }
 
 
@@ -100,7 +103,8 @@ class InterceptionUpToMaxStore(component.Component):
     self.actualAbstractionFlux = self.amountToFlux(actualAbstractionAmount)
 
     # for reporting
-    self.totalActualAbstractionInUpstreamArea()
+    if self.calculateUpstreamTotals:
+      self.totalActualAbstractionInUpstreamArea()
 
     self.store = pcr.max(pcr.min(self.store - actualAbstractionAmount, self.maximumStore), 0)
     return self.actualAbstractionFlux

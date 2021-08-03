@@ -151,26 +151,33 @@ latitudeOfCatchment = 52.12833333
 longitudeOfCatchment = 5.19861111
 timeZone = "Europe/Madrid"
 
+# calculate upstream totals (with accuflux) in subsurfacewateronelayer module
+# and interceptionuptomaxstore module
+# at least needed for some reports and possibly for budget checks (if one
+# needs these) and almost certainly for report as numpy in subsurfacewateronelayer and
+# interceptionuptomaxstore modules (not tested). For normal functioning of the model False is OK
+calculateUpstreamTotals = False
+
 #
 # Reporting for the model components
 #
 if setOfVariablesToReport == 'full':
-  interception_report_rasters = ["Vot", "Vo", "Vi", "Vgf", "Vms", "Vot"]
+  interception_report_rasters = ["Vo", "Vi", "Vgf", "Vms"] # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   evapotrans_report_rasters = ["Ep", "Epc"]
   infiltration_report_rasters = ["Ii", "Ij", "Is", "Iks"]
   runoff_report_rasters = ["Rq", "Rqs"]
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
-  subsurface_report_rasters = ["Gs", "Go", "Gxt", "Got"]
+  subsurface_report_rasters = ["Gs", "Go"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
 elif setOfVariablesToReport == 'filtering':
-  interception_report_rasters = []
+  interception_report_rasters = []  # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   evapotrans_report_rasters = []
   infiltration_report_rasters = []
   runoff_report_rasters = []
   shading_report_rasters = []
-  subsurface_report_rasters = []
+  subsurface_report_rasters = []   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc", "Xra"]

@@ -1,5 +1,14 @@
 Changelog and remarks
 
+## 3 aug 2021
+
+main_weekly.py
+Moved all configurations to a configuration file, configuration_weekly.py
+Created an option in the configuration file (calculateUpstreamTotals) which switches on or off the extra accu operations in subsurfacwateronelayer.py as well as interceptionuptomaxstore.py, which are only used for reporting (or possibly for budget checks).
+
+main.py
+Created an option in the configuration file (calculateUpstreamTotals) which switches on or off the extra accu operations in subsurfacwateronelayer.py as well as interceptionuptomaxstore.py, which are only used for reporting (or possibly for budget checks). They are also used for numpy reports but this was not tested thus far.
+
 ## 6 July 2021
 
 Test for github

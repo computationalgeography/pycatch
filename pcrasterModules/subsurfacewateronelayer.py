@@ -42,6 +42,7 @@ class SubsurfaceWaterOneLayer(component.Component):
               fieldCapacityFraction,
               limitingPointFraction,
               saturatedConductivityMetrePerDay,
+              calculateUpstreamTotals,
               timeStepDuration,
               timeStepsToReport,
               setOfVariablesToReport):
@@ -99,6 +100,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.timeStepDuration = timeStepDuration
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
+    self.calculateUpstreamTotals = calculateUpstreamTotals
 
     # DJ add check on fractions (e.g. wiltingpoint cannot be bigger than soil porosity)
 
@@ -117,8 +119,8 @@ class SubsurfaceWaterOneLayer(component.Component):
                                 # 'Gwp': self.fWaterPotential,
                                 # 'rts': self.regolithThickness,
                                 # 'Gks': self.saturatedConductivityMetrePerDay
-                                'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
-                                'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
+                                # 'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
+                                # 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
                            }
 
 
@@ -262,8 +264,8 @@ class SubsurfaceWaterOneLayer(component.Component):
     # conversions
     self.actualAbstractionFlux = self.amountToFlux(self.actualAbstractionFluxAmount)
 
-    # for a report
-    self.totalActualAbstractionInUpstreamArea()
+    if self.calculateUpstreamTotals:
+      self.totalActualAbstractionInUpstreamArea()
 
     return self.actualAbstractionFlux
 
@@ -307,12 +309,14 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.soilMoistureThick = self.soilMoistureThick - self.lateralFlowFluxAmount + pcr.upstream(self.ldd, self.lateralFlowFluxAmount)
     self.upwardSeepageAmount = pcr.max(pcr.scalar(0.0), self.soilMoistureThick - self.soilPorosityThick)
     self.soilMoistureThick = pcr.min(self.soilMoistureThick, self.soilPorosityThick)
-
     self.upwardSeepageFlux = self.amountToFlux(self.upwardSeepageAmount)
-    self.totalUpwardSeepageInUpstreamArea()
-    self.totalSoilMoistureThickInUpstreamArea()
-    self.totalSoilMoistureFractionInUpstreamArea()
-    self.totalSaturatedThickInUpstreamArea()
+
+    if self.calculateUpstreamTotals:
+      self.totalUpwardSeepageInUpstreamArea()
+      self.totalSoilMoistureThickInUpstreamArea()
+      self.totalSoilMoistureFractionInUpstreamArea()
+      self.totalSaturatedThickInUpstreamArea()
+
     return self.upwardSeepageFlux
 
   def totalUpwardSeepageInUpstreamArea(self):

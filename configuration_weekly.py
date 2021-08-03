@@ -35,14 +35,21 @@ theDurationOfRainstorm=2.0
 #setOfVariablesToReport = 'filtering'
 setOfVariablesToReport = 'full'
 
+# calculate upstream totals (with accuflux) in subsurfacewateronelayer module
+# and interceptionuptomaxstore module
+# may be needed for some reports
+# and possibly for budget checks (if one needs these)
+# normal use: set to False
+calculateUpstreamTotals = False
+
 #
 # Reporting for the model components
 #
 if setOfVariablesToReport == 'full':
-  interception_report_rasters = ["Vot", "Vo", "Vi", "Vgf", "Vms", "Vot"]
+  interception_report_rasters = ["Vo", "Vi", "Vgf", "Vms"] # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   infiltration_report_rasters = ["Ii", "Is", "Iks"]
   runoff_report_rasters = ["Rq", "Rqs"]
-  subsurface_report_rasters = ["Gs", "Go", "Gxt", "Got"]
+  subsurface_report_rasters = ["Gs", "Go"]  # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]
   rainfalleventsfromgammadistribution_report_rasters = ["Pf"]
   exchange_report_rasters = ["Xrc"]
@@ -54,10 +61,10 @@ if setOfVariablesToReport == 'full':
   baselevel_report_rasters = ["Ll"]
   creep_report_rasters = ["Ds"]
 elif setOfVariablesToReport == 'filtering':
-  interception_report_rasters = []
+  interception_report_rasters = [] # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   infiltration_report_rasters = []
   runoff_report_rasters = []
-  subsurface_report_rasters = []
+  subsurface_report_rasters = []  # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   rainfalleventsfromgammadistribution_report_rasters = []
   soilwashMMF_report_rasters = []

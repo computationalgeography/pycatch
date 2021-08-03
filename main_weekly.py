@@ -671,6 +671,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                     initialInterceptionStore, \
                                     maximumInterceptionStore, \
                                     gapFraction, \
+                                    cfg.calculateUpstreamTotals, \
                                     durationOfRainstorm,
                                     timeStepsToReportAll,
                                     cfg.interception_report_rasters)
@@ -724,6 +725,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                                    fieldCapacityFraction,
                                    limitingPointFraction,
                                    saturatedConductivityMetrePerDay,
+                                   cfg.calculateUpstreamTotals, 
                                    self.timeStepDurationHours,
                                    timeStepsToReportAll,
                                    cfg.subsurface_report_rasters)

@@ -276,6 +276,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                     initialInterceptionStore,
                                     maximumInterceptionStore,
                                     gapFraction,
+                                    cfg.calculateUpstreamTotals,
                                     self.timeStepDurationHours,
                                     cfg.timeStepsToReportSome,
                                     cfg.interception_report_rasters)
@@ -360,6 +361,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                    fieldCapacityFraction,
                                    limitingPointFraction,
                                    saturatedConductivityMetrePerDay,
+                                   cfg.calculateUpstreamTotals,
                                    self.timeStepDurationHours,
                                    cfg.timeStepsToReportSome,
                                    cfg.subsurface_report_rasters)
@@ -480,6 +482,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                   (startTime, self.timeStepDatetimeFormat)
 
   def checkBudgets(self, currentSampleNumber, currentTimeStep):
+    # DK not sure this is still correct
 
     increaseInPrecipitationStore = 0.0 - self.d_exchangevariables.cumulativePrecipitation
     pcr.report(increaseInPrecipitationStore, pcrfw.generateNameST('incP', currentSampleNumber, currentTimeStep))
