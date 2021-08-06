@@ -13,8 +13,15 @@ import component
 # functions are always PCRaster types
 
 class InterceptionUpToMaxStore(component.Component):
-  def __init__(self, ldd, initialStore, maximumStore, gapFraction, calculateUpstreamTotals, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
+  """ This class implements interception
 
+  Some more detailed description...
+
+  :param ldd: drainage network
+  :type ldd:  spatial
+
+  """
+  def __init__(self, ldd, initialStore, maximumStore, gapFraction, calculateUpstreamTotals, timeStepDuration, timeStepsToReport, setOfVariablesToReport):
     # init only to run supsend and resume in filtering
     self.variablesToReport = {}
     self.variablesAsNumpyToReport = {}
@@ -50,43 +57,68 @@ class InterceptionUpToMaxStore(component.Component):
 
 
   def reportAsMaps(self, sample, timestep):
+    """
+    """
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
   def updateVariablesAsNumpyToReport(self):
+    """
+    """
     self.variablesAsNumpyToReport = {
                                 'Vot': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
                                     }
 
   def reportAsNumpyOneFile(self, locations, sample, timestep, endTimeStep):
+    """
+    """
     self.updateVariablesAsNumpyToReport()
     self.reportAsNumpyOneFilePerRealization(locations, sample, timestep, endTimeStep)
 
   def reportAsNumpyMultipleFiles(self, locations, sample, timestep):
+    """
+    """
     self.updateVariablesAsNumpyToReport()
     self.reportAsNumpy(locations, sample, timestep)
 
 
   def fluxToAmount(self, flux):
+    """
+    """
     fluxAmount = flux * self.timeStepDuration
     return fluxAmount
 
   def amountToFlux(self, amount):
+    """
+    """
     flux = amount / self.timeStepDuration
     return flux
 
   def calculateMaximumAdditionAmount(self):
+    """
+    """
     return pcr.max(0, self.maximumStore - self.store)
 
   def calculateMaximumAbstractionAmount(self):
+    """
+    """
     return pcr.max(0, self.store - 0.0)
 
   def gapFractionLoss(self, potentialAdditionFlux):
+    """
+    """
     canopyFraction = 1.0 - self.gapFraction
     potentialAdditionToCanopyFlux = potentialAdditionFlux * canopyFraction
     return potentialAdditionToCanopyFlux
 
   def addWater(self, potentialAdditionFlux):
+    """ Adding water
+
+    :param potentialAdditionFlux: potential flux to be added, in m/h
+    :type potentialAdditionFlux:  non-spatial, spatial
+    :returns: actual flux to be added, in m/h
+    :rtype: spatial
+    """
     potentialAdditionToCanopyFlux = self.gapFractionLoss(potentialAdditionFlux)
     potentialAdditionAmount = self.fluxToAmount(potentialAdditionToCanopyFlux)
     maximumAdditionAmount = self.calculateMaximumAdditionAmount()
@@ -97,6 +129,8 @@ class InterceptionUpToMaxStore(component.Component):
     return self.actualAdditionFlux
 
   def abstractWater(self, potentialAbstractionFlux):
+    """
+    """
     potentialAbstractionAmount = self.fluxToAmount(potentialAbstractionFlux)
     maximumAbstractionAmount = self.calculateMaximumAbstractionAmount()
     actualAbstractionAmount = pcr.min(potentialAbstractionAmount, maximumAbstractionAmount)
@@ -110,12 +144,18 @@ class InterceptionUpToMaxStore(component.Component):
     return self.actualAbstractionFlux
 
   def totalActualAbstractionInUpstreamArea(self):
+    """
+    """
     self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour = pcr.accuflux(self.ldd, self.actualAbstractionFlux) * pcr.cellarea()
 
   def setGapFraction(self, gapFraction):
+    """
+    """
     self.gapFraction = pcr.scalar(gapFraction)
 
   def setMaximumStore(self, maximumStore):
+    """
+    """
     self.maximumStore = pcr.scalar(maximumStore)
     self.store = pcr.min(self.store, self.maximumStore)
 
@@ -124,6 +164,8 @@ class InterceptionUpToMaxStore(component.Component):
 #    printCellValue(self, self.store, 'interception store', 'm', row, column)
 
   def budgetCheck(self, sample, timestep):
+    """
+    """
     # this should include setMaximumStore as this may result in throwing away of water
     # NOTE this is only valid if addition,subtraction and lateral flow are invoked ONCE EACH TIME STEP
     # NOTE use of maptotal, in case of ldd not covering whole area, absolute values may not be
