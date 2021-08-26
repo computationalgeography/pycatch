@@ -1,7 +1,7 @@
 import pathlib
 
 # use for other runs
-#numberOfTimeSteps=1500000   # long run (for hysteresis)
+#numberOfTimeSteps=1500000   # long run
 numberOfTimeSteps=5200   # test run
 
 # option to fix both the regolith and the vegetation, not typically used
@@ -19,10 +19,9 @@ nrOfSamples = 1
 intervalForStatsCalculated=100
 #intervalForStatsCalculated=1
 
+# for calculation of early warning signals
+# does not work anymore
 variances=False
-
-# option to do data assimilation, always False, not implemented
-filtering=False
 
 # option to define some parameters as realizations from random
 # functions, typically False

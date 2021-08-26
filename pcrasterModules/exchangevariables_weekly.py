@@ -18,12 +18,11 @@ class ExchangeVariables(component.Component):
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                                'Xrc': self.regolithThicknessCParameter,
                                'Xra': self.regolithThicknessAParameter,
                                'Xmu': self.evapFromSoilMultiplier
                           }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)

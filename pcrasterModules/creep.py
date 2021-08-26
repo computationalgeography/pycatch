@@ -30,6 +30,7 @@ class Creep(component.Component):
     self.correctedFactor=scalar(0)
     self.velocityMetrePerYear=scalar(0)
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                            'Ds': self.soilThickness,
                            'Dou': self.outflow,
@@ -37,8 +38,6 @@ class Creep(component.Component):
                            'Dco': self.correctedFactor,
                            'Dve': self.velocityMetrePerYear
                              }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

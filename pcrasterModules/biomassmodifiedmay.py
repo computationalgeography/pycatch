@@ -67,13 +67,13 @@ class BiomassModifiedMay(component.Component):
     self.netGrowth=scalar(0)
     #self.minimumAllowedBiomass=scalar(0.00000001)
     # let op higher minimum allowd biomass
-    print('# let op higher minimum allowd biomass')
     self.minimumAllowedBiomass=scalar(0.01)
     self.timeStepDuration=timeStepDuration
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
     self.numberOfNeighbours=window4total(spatial(scalar(1)))
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                           'Xs': self.biomass,
                           'Xla': self.LAI,
@@ -84,8 +84,6 @@ class BiomassModifiedMay(component.Component):
                           'Xno': self.noise,
                           'Xng': self.netGrowth
                            }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

@@ -7,9 +7,7 @@ dependencies:
 - matplotlib
 - pcraster
 - numpy
-- networkx
 - sphinx
-- qgis
 - scipy
 - sympy
 - pysolar

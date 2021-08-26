@@ -35,12 +35,11 @@ class SurfaceStore(component.Component):
     # budget
     self.actualAdditionCum = pcr.scalar(0.0)
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                             'Ss': self.store,
                             'Sc': self.changeFlux
                           }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

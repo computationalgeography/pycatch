@@ -32,12 +32,14 @@ class RunoffAccuthreshold(component.Component):
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
 
+  def reportAsMaps(self, sample, timestep):
+    '''
+    map report
+    '''
     self.output_mapping = {
                             'Rq': self.RunoffCubicMetrePerHour,
                             'Rqs': self.RunoffCubicMeterPerHourMovingAverage
                           }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

@@ -52,6 +52,7 @@ class SoilWashMMF(component.Component):
     self.heightSoilOfOneKiloRock=volumeSoilOfOneKiloRock/cellarea()
     report(self.heightSoilOfOneKiloRock,'hsook')
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                            'Wde': self.netDepositionKgPerCell,
                            'Wdm': self.netDepositionMetre,
@@ -62,8 +63,6 @@ class SoilWashMMF(component.Component):
                            'Wsp': self.streamPowerCmPerSec,
                            'Wac': self.accuDeposition
                           }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

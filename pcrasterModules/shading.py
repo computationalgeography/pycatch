@@ -72,13 +72,12 @@ class Shading(component.Component):
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
 
+  def reportAsMaps(self,sample,timestep):
     self.output_mapping = {
                            'Mfs': self.fractionSolarBeamReceived,
                            'Msc': self.solarCritAngle,
                            'Msh': self.shaded
                           }
-
-  def reportAsMaps(self,sample,timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample,timestep)
 

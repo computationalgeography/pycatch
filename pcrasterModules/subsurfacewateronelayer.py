@@ -110,6 +110,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.lateralFlowFluxAmountCum = pcr.scalar(0)
     self.upwardSeepageCum = pcr.scalar(0)
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                                 'Gs': self.soilMoistureThick,
                                 # 'Gad': self.maximumAdditionThick,
@@ -122,9 +123,6 @@ class SubsurfaceWaterOneLayer(component.Component):
                                 # 'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
                                 # 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
                            }
-
-
-  def reportAsMaps(self, sample, timestep):
     # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)

@@ -30,6 +30,7 @@ class RandomParameters(component.Component):
     self.saturatedConductivityMetrePerDay = saturatedConductivityMetrePerDay
     self.multiplierMaxStomatalConductance = multiplierMaxStomatalConductance
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                                  'RPic': self.maximumInterceptionCapacityPerLAI,
                                  'RPks': self.ksat,
@@ -37,9 +38,6 @@ class RandomParameters(component.Component):
                                  'RPsc': self.saturatedConductivityMetrePerDay,
                                  'RPmm': self.multiplierMaxStomatalConductance
                           }
-
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
 
     if timestep in self.timeStepsToReport:

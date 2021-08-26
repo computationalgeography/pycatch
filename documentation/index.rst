@@ -22,7 +22,7 @@ A brief documentation of the PyCatch model.
 
    components/evapotrans
    components/infiltration
-   components/interception
+   components/interceptionuptomaxstore
    components/runoff
    components/shading
    components/subsurface

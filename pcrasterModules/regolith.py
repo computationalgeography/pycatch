@@ -26,7 +26,6 @@ class RegolithDemAndBedrock(component.Component):
     self.setOfVariablesToReport=setOfVariablesToReport
     #self.minimumAllowedRegolithThickness=0.000001
     self.minimumAllowedRegolithThickness=0.001
-    print('LET OP minimumAllowedRegolithThickness=0.001 instead of 0.000001')
     self.surfaceLdd=lddcreate(self.dem,1e31,1e31,1e31,1e31)
     self.bedrockLdd=lddcreate(self.demOfBedrock,1e31,1e31,1e31,1e31)
 
@@ -36,6 +35,7 @@ class RegolithDemAndBedrock(component.Component):
     # budget check
     # needs to be written
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                           'Ast': self.regolithThickness,
                           'Adb': self.demOfBedrock,
@@ -43,8 +43,6 @@ class RegolithDemAndBedrock(component.Component):
                           'Abl': self.bedrockLdd,
                           'Asl': self.surfaceLdd,
                            }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

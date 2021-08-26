@@ -3,6 +3,7 @@ import sys
 import datetime
 from collections import deque
 import glob
+import math
 
 sys.path.append("../pycatch/pcrasterModules/")
 
@@ -139,7 +140,6 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
 
     import generalfunctions   # not sure why this needs to be imported again
 
-
     #option to print time info
     #print self.currentTimeStep()
     # time
@@ -153,21 +153,15 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
 
     
     # grazing pressure driver
-    # note that biomassmodifiedmay.py in the method grazingTerm does
-    # define a specific function for grazing
-    # this below increases grazing pressure and then reduces it again, for the hysteris plot
-    # to create the hysteresis plot, see the folder 'scenarios', revised paper!
-    #grazingRateIncrease=50.0*(0.00000007/52.0)
+    # this below increases grazing pressure and then reduces it again
     grazingRateIncreaseTotal=0.0003
     grazingRateIncrease=grazingRateIncreaseTotal/(cfg.numberOfTimeSteps/2.0)
     if self.currentTimeStep() < (cfg.numberOfTimeSteps/2.0):
       self.grazingRate=self.grazingRate+grazingRateIncrease
     else:
       self.grazingRate=self.grazingRate-grazingRateIncrease
-    #print 'grazing rate is ', self.grazingRate
 
     self.grazingPressureArray=numpy.append(self.grazingPressureArray,self.grazingRate)
-
 
     runoffMetreWaterDepthPerWeek=self.runoffMetreWaterDepthPerHour*cfg.theDurationOfRainstorm
     self.biomass,self.LAI=self.d_biomassModifiedMay.update(self.actualAbstractionFluxFromSubsurface, \
@@ -331,134 +325,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     #self.printComponentsDynamic()
 
 
-    ############
-    # statistics
-    ############
-
     calculateStats = (self.currentTimeStep()% cfg.intervalForStatsCalculated ) == 0
-    boundVector=(30.5,40.5)
-
-    # SOIL MOISTURE
-    self.d_subsurfaceWaterOneLayer.calculateSoilMoistureFraction()
-    variable=self.d_subsurfaceWaterOneLayer.soilMoistureFraction
-    variableSampled=ifthen(self.someLocs, variable)
-
-    self.historyOfSoilMoistureFraction=generalfunctions.keepHistoryOfMaps(self.historyOfSoilMoistureFraction, \
-                                                      variableSampled, \
-                                                      self.durationHistory)
-    stackOfMapsAsListVariable=list(self.historyOfSoilMoistureFraction)
-
-    if calculateStats:
-      if cfg.variances:
-        # temporal
-        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-        numpy.savetxt(generateNameST('sfT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-        # spatial
-        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-        numpy.savetxt(generateNameST('sfS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-      # mean
-      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-      meanVariable=areaaverage(variable,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'sfA', \
-                       self.currentSampleNumber(),self.currentTimeStep())
-
-    # BIOMASS
-    variable=self.d_biomassModifiedMay.biomass
-    variableSampled=ifthen(self.someLocs, variable)
-      #self.grazingRate=self.grazingRate+0.25*(0.0000000375/52.0)
-
-
-    self.historyOfBiomass=generalfunctions.keepHistoryOfMaps(self.historyOfBiomass, \
-                                                      variableSampled, \
-                                                      self.durationHistory)
-    stackOfMapsAsListVariable=list(self.historyOfBiomass)
-
-    if calculateStats:
-      if cfg.variances:
-        # temporal
-        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-        numpy.savetxt(generateNameST('bioT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-        # spatial
-        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-        numpy.savetxt(generateNameST('bioS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-      # mean
-      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-      meanVariable=areaaverage(variable,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'bioA', \
-                       self.currentSampleNumber(),self.currentTimeStep())
-
-    # REGOLITH THICKNESS
-    variable=self.d_regolithdemandbedrock.regolithThickness
-    variableSampled=ifthen(self.someLocs, variable)
-
-    self.historyOfRegolithThickness=generalfunctions.keepHistoryOfMaps(self.historyOfRegolithThickness, \
-                                                      variableSampled, \
-                                                      self.durationHistory)
-    stackOfMapsAsListVariable=list(self.historyOfRegolithThickness)
-
-    if calculateStats:
-      if cfg.variances:
-        # temporal
-        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-        numpy.savetxt(generateNameST('regT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-        # spatial
-        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-        numpy.savetxt(generateNameST('regS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-      # mean
-      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-      meanVariable=areaaverage(variable,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'regA', \
-                       self.currentSampleNumber(),self.currentTimeStep())
-
-    # DEM 
-    variable=self.d_regolithdemandbedrock.dem
-    variableSampled=ifthen(self.someLocs, variable)
-
-    self.historyOfDem=generalfunctions.keepHistoryOfMaps(self.historyOfDem, \
-                                                      variableSampled, \
-                                                      self.durationHistory)
-    stackOfMapsAsListVariable=list(self.historyOfDem)
-
-    if calculateStats:
-      if cfg.variances:
-        # temporal
-        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-        numpy.savetxt(generateNameST('demT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-        # spatial
-        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-        numpy.savetxt(generateNameST('demS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-      # mean
-      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-      meanVariable=areaaverage(variable,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'demA',self.currentSampleNumber(),self.currentTimeStep())
-
-    # discharge 
-    downstreamEdge=generalfunctions.edge(self.clone,2,0)
-    pits=pcrne(pit(self.d_runoffAccuthreshold.ldd),0)
-    outflowPoints=pcrand(downstreamEdge,pits)
-    totQ=ifthen(self.clone,maptotal(ifthenelse(outflowPoints,self.d_runoffAccuthreshold.RunoffCubicMetrePerHour,scalar(0))))
-
-    variable=totQ
-    variableSampled=ifthen(self.someLocs, variable)
-
-    self.historyOfTotQ=generalfunctions.keepHistoryOfMaps(self.historyOfTotQ, \
-                                                      variableSampled, \
-                                                      self.durationHistory)
-    stackOfMapsAsListVariable=list(self.historyOfTotQ)
-
-    if calculateStats:
-      if cfg.variances:
-        # temporal
-        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-        numpy.savetxt(generateNameST('qT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-      # mean
-      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,totQ,'qA',self.currentSampleNumber(),self.currentTimeStep())
-
-    # grazing rate
-    if calculateStats:
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,spatial(scalar(self.grazingRate)),'gA',self.currentSampleNumber(),self.currentTimeStep())
 
     # some extra outputs
     if calculateStats:
@@ -496,17 +363,11 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     
   def postmcloop(self):
     import generalfunctions
-    names=['grA', 'bioA', 'sfA', 'regA', 'demA', 'qA','gA','gpA', 'grNA','depA','weaA','creA']
+    names=['grA', 'gpA', 'grNA','depA','weaA','creA']
     for name in names:
       aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray( \
                   name,range(1,cfg.nrOfSamples+1),timeStepsWithStatsCalculated)
       numpy.save(name,aVariable)
-    if cfg.variances:
-      names=['sfT', 'sfS', 'bioT', 'bioS', 'regT', 'regS', 'demT', 'demS', 'qT']
-      aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray( \
-                  name,range(1,cfg.nrOfSamples+1),timeStepsWithStatsCalculated)
-      numpy.save(name,aVariable)
-    self.a='jan'
 
   def createInstancesPremcloop(self):
     pass
@@ -515,16 +376,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
   def createInstancesInitial(self):
     import generalfunctions
 
-    # basis:
-    #timeStepsToReportAll = range(100,cfg.numberOfTimeSteps + 1,100)
-
-    # varianten
-    #timeStepsToReportAll = range(0,cfg.numberOfTimeSteps + 1,52)
-    #timeStepsToReportAll = range(1000,cfg.numberOfTimeSteps + 1,1000)
-    #timeStepsToReportAll = range(2,cfg.numberOfTimeSteps + 1,2)
-    #timeStepsToReportAll = range(100,cfg.numberOfTimeSteps + 1,100)
     timeStepsToReportAll = range(100,cfg.numberOfTimeSteps + 1,100)
-    #timeStepsToReportAll = range(1,cfg.numberOfTimeSteps + 1,1)
     timeStepsToReportSome = range(3000,cfg.numberOfTimeSteps + 1,100)
 
     # class for exchange variables in initial and dynamic
@@ -561,8 +413,6 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
 
     # regolith
     regolithThickness=spatial(steadyStateSoilDepth)
-    #regolithThickness=spatial(scalar(0.49))
-    #print "LET OP REG THICKNESS VAST GEZET OP 0.49!!!!!!!!!"
     
     self.timeStepDurationRegolithInYears=1.0
     self.d_regolithdemandbedrock=regolith.RegolithDemAndBedrock(
@@ -875,88 +725,8 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     budgetRel=budget/increaseInRunoffStoreCubicMetresInUpstreamArea
     report(budgetRel,generateNameST('B-rel', currentSampleNumber, currentTimeStep))
 
-## functions for particle filtering, not used/tested
-  def suspend(self):
-    import generalfunctions
-    if self.currentTimeStep() != cfg.numberOfTimeSteps:
-      self.timeStepForResume=self.currentTimeStep()
-
-      components =[ self.d_exchangevariables, \
-                   self.d_interceptionuptomaxstore, \
-                   self.d_surfaceStore, \
-                   self.d_infiltrationonlyksat, \
-                   self.d_runoffAccuthreshold, \
-                   self.d_subsurfaceWaterOneLayer] 
-
-      for component in components:
-        generalfunctions.reportMemberVariablesOfAClassForSuspend(component,self.currentTimeStep(),self.currentSampleNumber())
-
-  def updateWeight(self):
-    print('#### UPDATEWEIGHTING')
-    print('filter timestep ', self._d_filterTimesteps[self.filterPeriod()-4])
-    print('lijst ', self._d_filterTimesteps)
-    print('filter sample ', self.currentSampleNumber())
-    modelledData=self.readmap('Rqs')
-    observations=self.readDeterministic('observations/Rqs')
-    #observations=ifthen(pit(self.ldd) != 0,syntheticData)
-    measurementErrorSD=0.4*observations+1.0
-    sum=maptotal(((modelledData-observations)**2)/(2.0*(measurementErrorSD**2)))
-    weight=exp(-sum)
-    weightFloatingPoint, valid=cellvalue(weight,1)
-    return weightFloatingPoint
-
-  def resume(self):
-    print('#### RESUMING')
-    print(self._d_filterTimesteps)
-    print(self.filterPeriod())
-    print(self._d_filterTimesteps[self.filterPeriod()-2])
-
-    import generalfunctions
-
-    # rerun initial
-    # self.timeStepDuration = 1.0 plain wrong
-    self.initializeTime(2001,2,26,self.timeStepDuration)
-    self.createInstancesInitial()
-    self.d_exchangevariables.upwardSeepageFlux=scalar(0)
-    #self.d_exchangevariables.evapFromSoilMultiplier=scalar(1)
-    self.d_exchangevariables.cumulativePrecipitation=scalar(0)
-
-    # resume time information
-    self.d_dateTimePCRasterPython.resume(self._d_filterTimesteps[self.filterPeriod()-2])
-
-    components =[self.d_exchangevariables, \
-                  self.d_interceptionuptomaxstore, \
-                  self.d_surfaceStore, \
-                  self.d_infiltrationonlyksat, \
-                  self.d_runoffAccuthreshold, \
-                  self.d_subsurfaceWaterOneLayer] 
-
-    for component in components:
-      generalfunctions.readMemberVariablesOfAClassForResume( \
-                       component,self._d_filterTimesteps[self.filterPeriod()-2],self.currentSampleNumber())
-
-    print('removeing files')
-    # remove files used to resume
-    for filename in glob.glob(str(self.currentSampleNumber()) + '/stateVar/*/*'):
-      os.remove(filename)
-    print('end removing files')
-
-if cfg.filtering:
-  myModel = CatchmentModel()
-  dynamicModel = DynamicFramework(myModel,cfg.numberOfTimeSteps)
-  mcModel = MonteCarloFramework(dynamicModel, cfg.nrOfSamples)
-  mcModel.setForkSamples(True,12)
-  #pfModel = SequentialImportanceResamplingFramework(mcModel)
-  pfModel = ResidualResamplingFramework(mcModel)
-  #filterTimesteps=range(20,1000,20)
-  filterTimesteps=range(3000,cfg.numberOfTimeSteps,100)
-  #filterTimesteps=[20,30,40]
-  pfModel.setFilterTimesteps(filterTimesteps)
-  pfModel.run()
-
-else:
-  myModel = CatchmentModel()
-  dynamicModel = DynamicFramework(myModel, cfg.numberOfTimeSteps)
-  mcModel = MonteCarloFramework(dynamicModel, cfg.nrOfSamples)
-  mcModel.setForkSamples(True,10)
-  mcModel.run()
+myModel = CatchmentModel()
+dynamicModel = DynamicFramework(myModel, cfg.numberOfTimeSteps)
+mcModel = MonteCarloFramework(dynamicModel, cfg.nrOfSamples)
+mcModel.setForkSamples(True,10)
+mcModel.run()

@@ -2,11 +2,18 @@ import pcraster as pcr
 import pcraster.framework as pcrfw
 import scipy.stats
 
-import numpy, os, operator, glob, subprocess
+import numpy
+import os
+import operator
+import glob
+import subprocess
+import math
+import rpy2
+
 ##
-#import rpy2.robjects.numpy2ri
-# rpy2.robjects.numpy2ri.activate() # nodig bij nieuwere rpy2 versie
-#import rpy2.robjects as robjects
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate() # nodig bij nieuwere rpy2 versie
+import rpy2.robjects as robjects
 ##
 from collections import deque
 #from PCRaster.NumPy import *
@@ -193,7 +200,6 @@ def openSamplesAndTimestepsAsNumpyArraysAsNumpyArrayTimeThenSamples(basename, sa
       fileName = pcrfw.generateNameST(basename, sample, timestep) + '.numpy.txt'
       array = numpy.atleast_2d(numpy.loadtxt(fileName))
       allSamples.append(array)
-    print(timestep)
     output.append(allSamples)
   outputAsArray = numpy.array(output)
   return outputAsArray
@@ -229,9 +235,7 @@ def openSamplesAndTimestepsAsNumpyArraysAsNumpyArray(basename, samples, timestep
       outputAsArray[timestepIndex, sampleIndex, ] = array
       done = done + 1
       timestepIndex += 1
-    print(sample, done)
     sampleIndex += 1
-  print('old', outputAsArray)
   return outputAsArray
 
 def openSamplesAsNumpyArrays(basename, samples, timesteps):
@@ -388,8 +392,8 @@ def mapToColAsArray(name):
   x,y are given as xcoordinate and ycoordinate values
 
   Returned array has elements of type numpy.float32"""
-  nrRows = clone().nrRows()
-  nrCols = clone().nrCols()
+  nrRows = pcr.clone().nrRows()
+  nrCols = pcr.clone().nrCols()
   nrCells = nrRows * nrCols
 
   mask = numpy.zeros(nrCells).astype(numpy.bool_)
@@ -552,9 +556,9 @@ def experimentalVariogramValuesInTime(stackOfMapsAsList, bounds):
           sumOfDists[k] = sumOfDists[k] + nrPairs * float(dist)
           used = 1
         k = k + 1
-  semvarList = map(operator.div, sumOfSquaredDiffOfLags, nrPairsOfLags)
-  distList = map(operator.div, sumOfDists, nrPairsOfLags)
-  return distList, semvarList
+  semvarList = map(operator.truediv, sumOfSquaredDiffOfLags, nrPairsOfLags)
+  distList = map(operator.truediv, sumOfDists, nrPairsOfLags)
+  return numpy.array(list(distList)), numpy.array(list(semvarList))
 
 # jan=pcr.ifthen(pcr.pcrle(pcr.uniqueid(pcr.defined('jet00000.001')),100),pcr.scalar('jet00000.001'))
 #test=[pcr.scalar('jet00000.001'),jan, pcr.scalar('jet00000.003'),pcr.scalar('jet00000.004')]

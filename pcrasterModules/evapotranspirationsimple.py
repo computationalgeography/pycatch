@@ -30,12 +30,11 @@ class EvapotranspirationSimple(component.Component):
     self.potentialEvapotranspirationFlux=scalar(0) 
     self.actualEvapotranspirationFlux=scalar(0)
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                            'Ep': self.potentialEvapotranspirationFlux, 
                            'Ea': self.actualEvapotranspirationFlux
                            }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

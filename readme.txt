@@ -11,24 +11,15 @@ Installation
 Create a conda environment by running pcraster_pycatch.yaml
 
 To run the model with 1 h timestep, run main.py
-To run the model with 1 week timestep, run main_weekly.py (this model includes erosion, not documented et)
+To run the model with 1 week timestep, run main_weekly.py (this model includes erosion, not documented yet)
 
 
-Configuring the main.py model
+Configuring the models
 =============================
 
 To remove all output, run clean.sh, this does NOT remove inputs, so there is no major risk, but check what is in clean.sh first
 
-Reports are defined in the modules, in pcrasterPythonModules
-As PCRaster maps:
-  - switch on or off reporting of whole modules, comment/uncomment in reportComponentsDynamic (in main.py)
-  - select maps reported by a module, edit in the module component def report
-  - note, in module component there is 'full' and 'filtering' by selecting one of these when instantiating
-    the module in main.py, you can also make selections in the reporting
-As numpy arrays (stored as .txt files and then combined in a numpy array in the postmcloop)
-  - switch on or off reporting of whole modules, comment/uncomment in reportComponentsDynamic (in main.py)
-  - select maps reported as numpy by a module, edit in the module component, reportAsNumpy
-    en reportAsNumpyComponentsPostmcloop
+Settings are in configuration.py and configuration_weekly.py
 
 
 Output file name conventions
@@ -36,7 +27,7 @@ Output file name conventions
 
 # first letter:
 
-exchange vars starting with                  X
+biomass or exchange vars starting with       X
 precipitation files starting with            P
 interception files starting with             V (from vegetation)
 surface store files starting with            S
@@ -99,3 +90,141 @@ RPks.npy  self.ksat,
 RPmm.npy  self.multiplierMaxStomatalConductance
 RPrt.npy  self.regolithThicknessHomogeneous,
 RPsc.npy  self.saturatedConductivityMetrePerDay,
+
+
+Removed code
+---------------
+
+Early warning signals
+~~~~~~~~~~~~~~~~~~~~~~
+
+Code to calculate statistics in the dynamic section. Removed as it was hard to get GSTAT running.
+Note also that it considerably slows down the model.
+
+#    ############
+#    # statistics
+#    ############
+#    # this needs GSTAT to run (rpy2) but cannot get it working
+#    # SciKit Gstat (another tool may be useful as well) 
+#    boundVector=(30.5,40.5)
+#
+#    # SOIL MOISTURE
+#    self.d_subsurfaceWaterOneLayer.calculateSoilMoistureFraction()
+#    variable=self.d_subsurfaceWaterOneLayer.soilMoistureFraction
+#    variableSampled=ifthen(self.someLocs, variable)
+#
+#    self.historyOfSoilMoistureFraction=generalfunctions.keepHistoryOfMaps(self.historyOfSoilMoistureFraction, \
+#                                                      variableSampled, \
+#                                                      self.durationHistory)
+#    stackOfMapsAsListVariable=list(self.historyOfSoilMoistureFraction)
+#
+#    if calculateStats:
+#      if cfg.variances:
+#        # temporal
+#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
+#        numpy.savetxt(generateNameST('sfT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#        # spatial
+#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
+#        numpy.savetxt(generateNameST('sfS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#      # mean
+#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
+#      meanVariable=areaaverage(variable,self.zoneMap)
+#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'sfA', \
+#                       self.currentSampleNumber(),self.currentTimeStep())
+#
+#    # BIOMASS
+#    variable=self.d_biomassModifiedMay.biomass
+#    variableSampled=ifthen(self.someLocs, variable)
+#
+#    self.historyOfBiomass=generalfunctions.keepHistoryOfMaps(self.historyOfBiomass, \
+#                                                      variableSampled, \
+#                                                      self.durationHistory)
+#    stackOfMapsAsListVariable=list(self.historyOfBiomass)
+#
+#    if calculateStats:
+#      if cfg.variances:
+#        # temporal
+#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
+#        numpy.savetxt(generateNameST('bioT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#        # spatial
+#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
+#        numpy.savetxt(generateNameST('bioS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#      # mean
+#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
+#      meanVariable=areaaverage(variable,self.zoneMap)
+#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'bioA', \
+#                       self.currentSampleNumber(),self.currentTimeStep())
+#
+#    # REGOLITH THICKNESS
+#    variable=self.d_regolithdemandbedrock.regolithThickness
+#    variableSampled=ifthen(self.someLocs, variable)
+#
+#    self.historyOfRegolithThickness=generalfunctions.keepHistoryOfMaps(self.historyOfRegolithThickness, \
+#                                                      variableSampled, \
+#                                                      self.durationHistory)
+#    stackOfMapsAsListVariable=list(self.historyOfRegolithThickness)
+#
+#    if calculateStats:
+#      if cfg.variances:
+#        # temporal
+#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
+#        numpy.savetxt(generateNameST('regT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#        # spatial
+#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
+#        numpy.savetxt(generateNameST('regS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#      # mean
+#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
+#      meanVariable=areaaverage(variable,self.zoneMap)
+#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'regA', \
+#                       self.currentSampleNumber(),self.currentTimeStep())
+#
+#    # DEM 
+#    variable=self.d_regolithdemandbedrock.dem
+#    variableSampled=ifthen(self.someLocs, variable)
+#
+#    self.historyOfDem=generalfunctions.keepHistoryOfMaps(self.historyOfDem, \
+#                                                      variableSampled, \
+#                                                      self.durationHistory)
+#    stackOfMapsAsListVariable=list(self.historyOfDem)
+#
+#    if calculateStats:
+#      if cfg.variances:
+#        # temporal
+#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
+#        numpy.savetxt(generateNameST('demT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#        # spatial
+#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
+#        numpy.savetxt(generateNameST('demS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#      # mean
+#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
+#      meanVariable=areaaverage(variable,self.zoneMap)
+#      generalfunctions.reportLocationsAsNumpyArray( \
+#                       self.aLocation,meanVariable,'demA',self.currentSampleNumber(),self.currentTimeStep())
+#
+#    # discharge 
+#    downstreamEdge=generalfunctions.edge(self.clone,2,0)
+#    pits=pcrne(pit(self.d_runoffAccuthreshold.ldd),0)
+#    outflowPoints=pcrand(downstreamEdge,pits)
+#    totQ=ifthen(self.clone,maptotal(ifthenelse(outflowPoints,self.d_runoffAccuthreshold.RunoffCubicMetrePerHour,scalar(0))))
+#
+#    variable=totQ
+#    variableSampled=ifthen(self.someLocs, variable)
+#
+#    self.historyOfTotQ=generalfunctions.keepHistoryOfMaps(self.historyOfTotQ, \
+#                                                      variableSampled, \
+#                                                      self.durationHistory)
+#    stackOfMapsAsListVariable=list(self.historyOfTotQ)
+#
+#    if calculateStats:
+#      if cfg.variances:
+#        # temporal
+#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
+#        numpy.savetxt(generateNameST('qT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
+#      # mean
+#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,totQ,'qA',self.currentSampleNumber(),self.currentTimeStep())
+#
+#    # grazing rate
+#    if calculateStats:
+#      generalfunctions.reportLocationsAsNumpyArray( \
+#                       self.aLocation,spatial(scalar(self.grazingRate)),'gA',self.currentSampleNumber(),self.currentTimeStep())
+

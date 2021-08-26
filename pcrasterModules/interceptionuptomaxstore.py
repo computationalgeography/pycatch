@@ -46,6 +46,10 @@ class InterceptionUpToMaxStore(component.Component):
     self.timeStepsToReport = timeStepsToReport
     self.setOfVariablesToReport = setOfVariablesToReport
 
+
+  def reportAsMaps(self, sample, timestep):
+    """
+    """
     self.output_mapping = {
                                 'Vs': self.store,
                                 'Vo': self.actualAbstractionFlux,
@@ -54,11 +58,6 @@ class InterceptionUpToMaxStore(component.Component):
                                 'Vms': self.maximumStore
                                 #'Vot': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
                           }
-
-
-  def reportAsMaps(self, sample, timestep):
-    """
-    """
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 

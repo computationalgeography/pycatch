@@ -24,11 +24,10 @@ class Baselevel(component.Component):
     self.setOfVariablesToReport=setOfVariablesToReport
     self.baselevel=ifthen(self.areaWhereBaselevelIsSet,self.initialLevel)
 
+  def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
                            'Ll': self.baselevel
                           }
-
-  def reportAsMaps(self, sample, timestep):
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
 
