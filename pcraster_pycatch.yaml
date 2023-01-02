@@ -2,9 +2,9 @@ name: pcraster_pycatch
 channels:
 - conda-forge
 dependencies:
-- python=3.7
+- python=3.10
 - spyder
-- matplotlib
+- matplotlib-base
 - pcraster
 - numpy
 - sphinx

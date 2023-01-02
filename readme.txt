@@ -8,7 +8,7 @@ Contact: d.karssenberg@uu.nl or noemi-solange.lana-renault@unirioja.es
 Installation
 ================
 
-Create a conda environment by running pcraster_pycatch.yaml
+Create a conda environment for PCRaster (for instance by running pcraster_pycatch.yaml)
 
 To run the model with 1 h timestep, run main.py
 To run the model with 1 week timestep, run main_weekly.py (this model includes erosion, not documented yet)
@@ -19,7 +19,28 @@ Configuring the models
 
 To remove all output, run clean.sh, this does NOT remove inputs, so there is no major risk, but check what is in clean.sh first
 
-Settings are in configuration.py and configuration_weekly.py
+Settings are in configuration.py (1 h model) and configuration_weekly.py (1 week timestep model)
+
+
+Instructions for hybrid modelling
+====================================
+
+Use the main_weekly.py model. Settings can be configured in configuration_weekly.py.
+
+Realizations of the model are executed parallel (forked). Each realisation is written to a subdirectory. The number of
+realizations can be defined in configuration_weekly.py. Each realisation of the model will be different as there is some tiny
+random noise included which results in different paths of how the system evolves.
+
+The model calculates grazing pressure inside the dynamic method. It currently gradually increases
+grazing pressure then decreases it. Output is written to 1/grazing.npy, 2/grazing.npy,.. etc (all the same as there are no
+differences between realizations.)
+
+The model calculates and reports soil depth and biomass. These are written as txt files in the folders 1, 2, 3, etc again
+
+The number of timesteps (time step duration is one week) is given in configuration_weekly.py
+
+For displaying some map outputs, use setOfVariablesToReport = 'some' in configuration_weekly.py, it writes biomass and
+grazing pressure for a defined interval. These can be displayed using the PCRaster Aguila visualisation tool.
 
 
 Output file name conventions

@@ -1,8 +1,8 @@
 import pathlib
 
-# use for other runs
-numberOfTimeSteps=10000 * 52   # long run
-#numberOfTimeSteps=5200   # test run
+# number of timesteps to be run 
+#numberOfTimeSteps=10000 * 52   # long run
+numberOfTimeSteps=5200   # test run
 #numberOfTimeSteps=520000   # test run
 
 # option to fix both the regolith and the vegetation, not typically used
@@ -13,8 +13,9 @@ fixedStates=False
 # this is typically on
 changeGeomorphology=True
 
-# number of realizations
-nrOfSamples = 1
+# number of realizations generated
+# output is written to subdirectories 1, 2, 3, ..
+nrOfSamples = 3
 
 # calculation of early warning signals
 intervalForStatsCalculated=52
@@ -35,7 +36,8 @@ theDurationOfRainstorm=2.0
 
 # option to define the variables to report to disc
 # these are defined in the modules, it is typically either 'full' or 'filtering'
-setOfVariablesToReport = 'filtering'
+setOfVariablesToReport = 'none'
+#setOfVariablesToReport = 'some'
 #setOfVariablesToReport = 'full'
 
 # option to define if stats are calculated and reported for zones
@@ -44,7 +46,11 @@ calculateStatsForZones = False
 
 # option to define if stats are calculated for the central
 # part of the map (almost the whole map), i.e. one value
-calculateStatsAverageOverMap = True
+calculateStatsAverageOverMap = False
+
+# calculate and store ad hoc report of timeseries as tss file
+reportAdHocTimeseries = True
+
 
 # calculate upstream totals (with accuflux) in subsurfacewateronelayer module
 # and interceptionuptomaxstore module
@@ -75,7 +81,7 @@ if setOfVariablesToReport == 'full':
   biomassmodifiedmay_report_rasters = ["Xs"]
   baselevel_report_rasters = ["Ll"]
   creep_report_rasters = ["Ds"]
-elif setOfVariablesToReport == 'filtering':
+elif setOfVariablesToReport == 'some':
   interception_report_rasters = [] # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   infiltration_report_rasters = []
   runoff_report_rasters = []
@@ -89,5 +95,21 @@ elif setOfVariablesToReport == 'filtering':
   bedrockweathering_report_rasters = []
   evapotranspirationsimple_report_rasters = []
   biomassmodifiedmay_report_rasters = ["Xs"]
+  baselevel_report_rasters = []
+  creep_report_rasters = []
+elif setOfVariablesToReport == 'none':
+  interception_report_rasters = [] # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
+  infiltration_report_rasters = []
+  runoff_report_rasters = []
+  subsurface_report_rasters = []  # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  surfacestore_report_rasters = []
+  rainfalleventsfromgammadistribution_report_rasters = []
+  soilwashMMF_report_rasters = []
+  exchange_report_rasters = []
+  soilwashMMF_report_rasters = []
+  regolith_report_rasters = []
+  bedrockweathering_report_rasters = []
+  evapotranspirationsimple_report_rasters = []
+  biomassmodifiedmay_report_rasters = []
   baselevel_report_rasters = []
   creep_report_rasters = []

@@ -141,6 +141,10 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     self.runoffMetreWaterDepthPerHour=scalar(0.0)
     self.creepDeposition=spatial(scalar(0.0))
 
+    if cfg.reportAdHocTimeseries: 
+      self.biomassTss=TimeoutputTimeseries("biomass", self, self.oneLocation, noHeader=True)
+      self.soilDepthTss=TimeoutputTimeseries("soildepth", self, self.oneLocation, noHeader=True)
+
 
 
   def dynamic(self):
@@ -158,19 +162,28 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
       self.d_regolithdemandbedrock.setNewRegolith(spatial(scalar(fixedStatesReg)))
       self.d_biomassModifiedMay.setNewBiomass(spatial(scalar(fixedStatesBio)))
 
-    
+
+    ################## 
     # grazing pressure driver
     # this below increases grazing pressure and then reduces it again
     # grazingRate is in kg m-2 h-1, typical 0.5 / (365*24) 
     # note that in the paper it is kg m-2 year-1 and it is up to about 2.5 kg m-2 year -1
+    # this code could be replaced by reading values from disk and assiging to the
+    # variable self.grazingRate
+    # you may want to use the build-in functions returning the time step number and the
+    # number of the realization:
+    # print(self.currentTimeStep(), self.currentSampleNumber())
     grazingRateIncreaseTotal=0.0003
     grazingRateIncrease=grazingRateIncreaseTotal/(cfg.numberOfTimeSteps/2.0)
     if self.currentTimeStep() < (cfg.numberOfTimeSteps/2.0):
       self.grazingRate=self.grazingRate+grazingRateIncrease
     else:
       self.grazingRate=self.grazingRate-grazingRateIncrease
+    ################## 
 
+    # collect grazing pressures in one numpy array for reporting
     self.grazingPressureArray=numpy.append(self.grazingPressureArray,self.grazingRate)
+
 
     runoffMetreWaterDepthPerWeek=self.runoffMetreWaterDepthPerHour*cfg.theDurationOfRainstorm
     self.biomass,self.LAI=self.d_biomassModifiedMay.update(self.actualAbstractionFluxFromSubsurface, \
@@ -356,6 +369,12 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     if self.currentTimeStep() == cfg.numberOfTimeSteps:
       name=generateNameS('grazing', self.currentSampleNumber()) 
       numpy.save(name,self.grazingPressureArray)
+
+    if cfg.reportAdHocTimeseries: 
+      meanVariable=areaaverage(self.d_biomassModifiedMay.biomass,self.areaForAverage)
+      self.biomassTss.sample(meanVariable)
+      meanVariable=areaaverage(self.d_regolithdemandbedrock.regolithThickness,self.areaForAverage)
+      self.soilDepthTss.sample(meanVariable)
     
     
   def postmcloop(self):
