@@ -8,12 +8,12 @@ import operator
 import glob
 import subprocess
 import math
-import rpy2
+#import rpy2
 
 ##
-import rpy2.robjects.numpy2ri
-rpy2.robjects.numpy2ri.activate() # nodig bij nieuwere rpy2 versie
-import rpy2.robjects as robjects
+#import rpy2.robjects.numpy2ri
+#rpy2.robjects.numpy2ri.activate() # nodig bij nieuwere rpy2 versie
+#import rpy2.robjects as robjects
 ##
 from collections import deque
 #from PCRaster.NumPy import *

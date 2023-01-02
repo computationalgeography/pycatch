@@ -27,7 +27,7 @@ Output file name conventions
 
 # first letter:
 
-biomass or exchange vars starting with       X
+biomass or exchange vars starting with       X (Xst, biomass)
 precipitation files starting with            P
 interception files starting with             V (from vegetation)
 surface store files starting with            S
@@ -38,7 +38,7 @@ runoff files starting with                   R
 shading files starting with                  M (from shading due to Mountains )
 budgets files starting with                  B
 soil wash files starting with                W
-regolith files starting with                 A
+regolith files starting with                 A (Ast, regolith depth (=soil depth))
 bedrock weathering files starting with       C
 base level files starting with               L
 creep files starting with                    D

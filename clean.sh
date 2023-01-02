@@ -8,3 +8,4 @@ rm -rf pcrasterModules/*.pyc
 rm -rf pcrasterModules/__pycache__
 rm -rf dtfe.map hsook lde.map regIni.map
 rm -rf plotTimeseries_weekly.pdf
+rm -rf testMap.map

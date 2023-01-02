@@ -23,7 +23,6 @@ class BiomassModifiedMay(component.Component):
                gamma, \
                alpha, \
                dispersion, \
-               runoff, \
                sdOfNoise, \
                LAIPerBiomass, \
                timeStepDuration,timeStepsToReport,setOfVariablesToReport):
@@ -40,7 +39,7 @@ class BiomassModifiedMay(component.Component):
         verder niet makkelijk waarden te vinden
     gamma, exponent relating runoff to maintenance for erosion
         ?
-    alpha (half saturation constant relating grazing to vegetation density (kg/m2), typical 0.1
+    alpha (half saturation constant relating grazing to vegetation density (kg/m2), typical 0.4 or 0.5
     dispersion (hour -1), dispersion rate, typical 0.2 / (365*24)
     sdOfNoise (kg/m2 per hour??)
     LAIPerBiomass (/ kg/m2)
@@ -52,7 +51,6 @@ class BiomassModifiedMay(component.Component):
     self.waterUseEfficiency=waterUseEfficiency
     self.biomass=scalar(biomass)   # type definition seems to be required for reporting as maps
     self.maintenanceRate=maintenanceRate
-    self.runoff=runoff
     self.gamma=gamma
     self.alpha=alpha
     self.dispersion=dispersion

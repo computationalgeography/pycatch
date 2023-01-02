@@ -5,7 +5,7 @@ from collections import deque
 import glob
 import math
 
-sys.path.append("../pycatch/pcrasterModules/")
+sys.path.append("pcrasterModules/")
 
 # from PCRaster modules
 import generalfunctions
@@ -87,6 +87,13 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
       # location on mlocs
       self.zoneMap=nominal("inputs_weekly/zonsc.map")
 
+    # zone for average of map (excluding bottom row)
+    import generalfunctions
+    edgesMap=generalfunctions.edgeZone(self.clone,2.1)
+    self.areaForAverage=ifthen(~ edgesMap,boolean(1))
+    self.allLocations=nominal("inputs_weekly/mlocs")
+    self.oneLocation=nominal(cover(self.allLocations == 5,0))
+
     self.createInstancesPremcloop()
 
     self.durationHistory=207
@@ -154,6 +161,8 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     
     # grazing pressure driver
     # this below increases grazing pressure and then reduces it again
+    # grazingRate is in kg m-2 h-1, typical 0.5 / (365*24) 
+    # note that in the paper it is kg m-2 year-1 and it is up to about 2.5 kg m-2 year -1
     grazingRateIncreaseTotal=0.0003
     grazingRateIncrease=grazingRateIncreaseTotal/(cfg.numberOfTimeSteps/2.0)
     if self.currentTimeStep() < (cfg.numberOfTimeSteps/2.0):
@@ -315,47 +324,35 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
       self.d_soilwashMMF.setSurfaceProperties(surfaceLdd,dem)
       self.d_runoffAccuthreshold.setSurfaceProperties(surfaceLdd)
 
-    # option to do a test run with a very thin regolith
-    #print 'test with thin regolith'
-    #if self.currentTimeStep() == 6000:
-    #  self.d_regolithdemandbedrock.setNewRegolith(spatial(scalar(0.001)))
-
-    # reports
     self.reportComponentsDynamic()
     #self.printComponentsDynamic()
 
 
     calculateStats = (self.currentTimeStep()% cfg.intervalForStatsCalculated ) == 0
 
-    # some extra outputs
+
+    ######################
+    # some extra outputs #
+    ######################
+
     if calculateStats:
-      # growth part
-      meanVariable=areaaverage(self.d_biomassModifiedMay.growthPart,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'gpA',self.currentSampleNumber(),self.currentTimeStep())
-      # grazing part
-      meanVariable=0.0-areaaverage(spatial(self.d_biomassModifiedMay.grazing),self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'grA',self.currentSampleNumber(),self.currentTimeStep())
-      # net growth 
-      meanVariable=areaaverage(self.d_biomassModifiedMay.netGrowth,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'grNA',self.currentSampleNumber(),self.currentTimeStep())
-      # net deposition
-      #meanVariable=areaaverage(netDepositionMetre,self.zoneMap)
-      meanVariable=areaaverage(actualDepositionFlux,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'depA',self.currentSampleNumber(),self.currentTimeStep())
-      # net weathering
-      meanVariable=areaaverage(self.d_bedrockweathering.weatheringMetrePerYear,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'weaA',self.currentSampleNumber(),self.currentTimeStep())
-      # net creep deposition
-      meanVariable=areaaverage(self.creepDeposition,self.zoneMap)
-      generalfunctions.reportLocationsAsNumpyArray( \
-                       self.aLocation,meanVariable,'creA',self.currentSampleNumber(),self.currentTimeStep())
-
-
+      if cfg.calculateStatsForZones:
+        # growth part
+        meanVariable=areaaverage(self.d_biomassModifiedMay.growthPart,self.zoneMap)
+        generalfunctions.reportLocationsAsNumpyArray( \
+                         self.aLocation,meanVariable,'gpA',self.currentSampleNumber(),self.currentTimeStep())
+        # grazing part
+        meanVariable=0.0-areaaverage(spatial(self.d_biomassModifiedMay.grazing),self.zoneMap)
+        generalfunctions.reportLocationsAsNumpyArray( \
+                         self.aLocation,meanVariable,'grA',self.currentSampleNumber(),self.currentTimeStep())
+      if cfg.calculateStatsAverageOverMap:
+        meanVariable=areaaverage(self.d_biomassModifiedMay.biomass,self.areaForAverage)
+        generalfunctions.reportLocationsAsNumpyArray( \
+                         self.oneLocation,meanVariable,'bioA',self.currentSampleNumber(),self.currentTimeStep())
+        meanVariable=areaaverage(self.d_regolithdemandbedrock.regolithThickness,self.areaForAverage)
+        generalfunctions.reportLocationsAsNumpyArray( \
+                         self.oneLocation,meanVariable,'regA',self.currentSampleNumber(),self.currentTimeStep())
+      
     if self.currentTimeStep() == cfg.numberOfTimeSteps:
       name=generateNameS('grazing', self.currentSampleNumber()) 
       numpy.save(name,self.grazingPressureArray)
@@ -363,11 +360,19 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     
   def postmcloop(self):
     import generalfunctions
-    names=['grA', 'gpA', 'grNA','depA','weaA','creA']
-    for name in names:
-      aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray( \
-                  name,range(1,cfg.nrOfSamples+1),timeStepsWithStatsCalculated)
-      numpy.save(name,aVariable)
+    if cfg.calculateStatsForZones:
+      names=['grA', 'gpA']
+      for name in names:
+        aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray( \
+                    name,range(1,cfg.nrOfSamples+1),timeStepsWithStatsCalculated)
+        numpy.save(name,aVariable)
+    if cfg.calculateStatsAverageOverMap:
+      names=['bioA', 'regA']
+      for name in names:
+        aVariable = generalfunctions.openSamplesAndTimestepsAsNumpyArraysAsNumpyArray( \
+                    name,range(1,cfg.nrOfSamples+1),timeStepsWithStatsCalculated)
+        numpy.save(name,aVariable)
+
 
   def createInstancesPremcloop(self):
     pass
@@ -376,7 +381,8 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
   def createInstancesInitial(self):
     import generalfunctions
 
-    timeStepsToReportAll = range(100,cfg.numberOfTimeSteps + 1,100)
+    timeStepsToReportAll = range(cfg.reportInterval,cfg.numberOfTimeSteps + 1,cfg.reportInterval)
+    #timeStepsToReportAll = range(100,cfg.numberOfTimeSteps + 1,100)
     timeStepsToReportSome = range(3000,cfg.numberOfTimeSteps + 1,100)
 
     # class for exchange variables in initial and dynamic
@@ -425,25 +431,29 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     regolithThickness,demOfBedrock,dem,bedrockLdd,surfaceLdd=self.d_regolithdemandbedrock.getRegolithProperties()
     report(regolithThickness,'regIni.map')
 
-    # biomass
+
+    ###########
+    # biomass #
+    ###########
+
     initialBiomass=2.0
-    waterUseEfficiency=5.0
-    maintenanceRate=0.5/(365.0*24.0)
 
-    # original
-    gamma=0.004 # runoff
-    ## gamma zero
-    #gamma=0.0001 # runoff
-    ## gamma low
-    #gamma=0.001 # runoff
-    ## gamma medium
-    #gamma=0.002 # runoff
+    waterUseEfficiency=5.0                # same as in paper, table A2, w
 
-    alpha = 0.4 # grazing
-    dispersion = 0.01/(365.0*24)
-    runoff = 0.0  # niet gebruikt ! (?) kan dus weg
+    maintenanceRate=0.5/(365.0*24.0)      # same as in paper, table A2, m
+
+    gamma=0.004                           # runoff effect on vegetation, this is represented by q in the supplement
+                                          # not sure this is the same value
+
+    alpha = 0.4                           # grazing, it seems this is 0.5 in the appendix, table A2, but the simple
+                                          # model uses 0.4 so we may want to keep it at 0.4
+
+    dispersion = 0.01/(365.0*24)          
+
     sdOfNoise = 0.000000000001
-    LAIPerBiomass = 2.5
+
+    LAIPerBiomass = 2.5                   # same as in paper, table A2, labda
+
     self.d_biomassModifiedMay = biomassmodifiedmay.BiomassModifiedMay( \
                  initialBiomass, \
                  waterUseEfficiency, \
@@ -451,14 +461,17 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                  gamma, \
                  alpha, \
                  dispersion, \
-                 runoff, \
                  sdOfNoise, \
                  LAIPerBiomass, \
                  self.timeStepDuration, \
                  timeStepsToReportAll, \
                  cfg.biomassmodifiedmay_report_rasters)
 
-    # precipitation
+
+    #################
+    # precipitation #
+    #################
+
     # scenario: original
     probabilityOfARainstorm=0.4
     durationOfRainstorm=cfg.theDurationOfRainstorm
