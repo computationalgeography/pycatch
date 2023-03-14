@@ -12,6 +12,7 @@ Create a conda environment for PCRaster (for instance by running pcraster_pycatc
 
 To run the model with 1 h timestep, run main.py
 To run the model with 1 week timestep, run main_weekly.py (this model includes erosion, not documented yet)
+To run the model with 10 second timestep, run main_seconds.py
 
 
 Configuring the models
