@@ -1,5 +1,12 @@
 Changelog and remarks
 
+## 16 mar 2023
+
+Adjusted configuration.py to create a model setup that needs a minimum number of inputs as maps.
+Parameters for that setup are 'randomly' taken from a single location of the input maps.
+It required adding an accuflux statement in main.py to calculate 'streams' on the fly based on the upstream area. This 'streams' is used to reduce the regolith thickness at stream pixels.
+Tested the model setup with the minimum number of input maps with the setting with input maps and discharge is somewhat different but basically very close as expected.
+
 ## 3 aug 2021
 
 main_weekly.py

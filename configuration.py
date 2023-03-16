@@ -6,6 +6,9 @@ numberOfTimeSteps = 10968
 # folder with input files (maps, timeseries)
 inputFolder = "inputs"
 
+# select maps as input parameters and initial values or uniform values over the area
+mapsAsInput = False
+
 # Define the number of Monte Carlo samples or particles
 # first time users will use 1 and results for that realization are written to
 # the folder '1'
@@ -67,74 +70,119 @@ if with_shading is False:
 # model inputs #
 ################
 
-# general ########
+#########################
+# always needed as maps #
+#########################
 
 # set clone
 cloneString = str(pathlib.Path(inputFolder, "mergeClone.map"))
 
+# digital elevation model (m)
 dem = str(pathlib.Path(inputFolder, "mergeDem.map"))
+
+# ldd map
+lddMap = str(pathlib.Path(inputFolder, "mergeldd.map"))
+
 # report locations, i.e. outflow points, for instance, at the outlet
 locations = str(pathlib.Path(inputFolder, "mergeOutFlowsNominal.map"))
-# map with forest or no forest, only used when swapCatchments is True
-forestNoForest = str(pathlib.Path(inputFolder, "mergeForestNoForest.map"))
-areas = str(pathlib.Path(inputFolder, "mergeForestNoForest.map"))
 
 
-# meteorology #######
+#####################
+# timeseries inputs #
+#####################
 
-# observed precipitation
+# meteorology 
+# same value across area (timseries has two columns) except rainfall (two areas, three columns)
 rainfallFluxDetermTimeSeries = str(pathlib.Path(inputFolder, "rainfallFluxTwoCatchsJulAugSep0506.tss"))
-# areas linked to rainfallFluxDetermTimeSeries
-rainfallFluxDetermTimeSeriesAreas = str(pathlib.Path(inputFolder, "mergeArnasSansaNominal.map"))
-
 airTemperatureDetermString = str(pathlib.Path(inputFolder, "airTemperatureArnaJulAugSep0506.tss"))
 relativeHumidityDetermString = str(pathlib.Path(inputFolder, "relativeHumidityArnasJulAugSep0506.tss"))
 incomingShortwaveRadiationFlatSurfaceString = str(pathlib.Path(inputFolder, "incomingShortwaveRadiationArnasJulAugSep0506.tss"))
 windVelocityDetermString = str(pathlib.Path(inputFolder, "windVelocityArnasJulAugSep0506.tss"))
-elevationAboveSeaLevelOfMeteoStationValue = 900.0
 
+######
+# inputs as maps or as uniform (constant) value over the area
+######
 
-# interception #######
-maximumInterceptionCapacityValue = 0.0002
-leafAreaIndexValue = str(pathlib.Path(inputFolder, "mergeVegLAIFS.map"))
+if mapsAsInput:
 
+  # forest (0) or no forest (1), only used when swapCatchments is True
+  forestNoForest = str(pathlib.Path(inputFolder, "mergeForestNoForest.map"))
+  areas = str(pathlib.Path(inputFolder, "mergeForestNoForest.map"))
 
-# surface storage ######
-maxSurfaceStoreValue = 0.001
+  # meteorology
+  # areas linked to rainfallFluxDetermTimeSeries (area code 1 and 2)
+  rainfallFluxDetermTimeSeriesAreas = str(pathlib.Path(inputFolder, "mergeArnasSansaNominal.map"))
+  elevationAboveSeaLevelOfMeteoStationValue = 900.0
 
+  # interception
+  maximumInterceptionCapacityValue = 0.0002
+  leafAreaIndexValue = str(pathlib.Path(inputFolder, "mergeVegLAIFS.map"))
 
-# infiltration #######
+  # surface storage
+  maxSurfaceStoreValue = 0.001
 
-# green and ampt
-ksatValue = 0.0163
-initialSoilMoistureFractionFromDiskValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
-soilPorosityFractionValue = str(pathlib.Path(inputFolder, "mergePorosityFractionFS.map"))
+  # infiltration
+  ksatValue = 0.0163
+  initialSoilMoistureFractionFromDiskValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
+  soilPorosityFractionValue = str(pathlib.Path(inputFolder, "mergePorosityFractionFS.map"))
 
+  # regolith geometry
+  regolithThicknessHomogeneousValue = 0.5
 
-# regolith geometry ########
-regolithThicknessHomogeneousValue = 0.5
+  # location of the stream, used to adjust regolith thickness there
+  streamValue = str(pathlib.Path(inputFolder, "mergeStream.map"))
 
-# location of the stream, used to adjust regolith thickness there
-streamValue = str(pathlib.Path(inputFolder, "mergeStream.map"))
+  # subsurface water 
+  saturatedConductivityMetrePerDayValue = 37.0
+  limitingPointFractionValue = str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map"))
+  mergeWiltingPointFractionFSValue = str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map"))
+  fieldCapacityFractionValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
 
+  # evapotranspiration
+  # penman
+  multiplierMaxStomatalConductanceValue = 1.0
+  albedoValue = str(pathlib.Path(inputFolder, "mergeVegAlbedoFS.map"))
+  maxStomatalConductanceValue = str(pathlib.Path(inputFolder, "mergeVegStomatalFS.map"))
+  vegetationHeightValue = str(pathlib.Path(inputFolder, "mergeVegHeightFS.map"))
 
-# 'groundwater' (saturated flow) ##########
-saturatedConductivityMetrePerDayValue = 37.0
-limitingPointFractionValue = str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map"))
-mergeWiltingPointFractionFSValue = str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map"))
-fieldCapacityFractionValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
+else:
+  
+  # forest (0) or no forest (1), only used when swapCatchments is True
+  forestNoForest = 0
+  areas = 0
 
-# evapotranspiration ###########
+  # meteorology
+  # areas linked to rainfallFluxDetermTimeSeries (area code 1 and 2)
+  rainfallFluxDetermTimeSeriesAreas = 1
+  elevationAboveSeaLevelOfMeteoStationValue = 900.0
 
-# penman
-multiplierMaxStomatalConductanceValue = 1.0
-albedoValue = str(pathlib.Path(inputFolder, "mergeVegAlbedoFS.map"))
-maxStomatalConductanceValue = str(pathlib.Path(inputFolder, "mergeVegStomatalFS.map"))
-vegetationHeightValue = str(pathlib.Path(inputFolder, "mergeVegHeightFS.map"))
+  # interception
+  maximumInterceptionCapacityValue = 0.0002
+  leafAreaIndexValue = 3.0
 
+  # surface storage
+  maxSurfaceStoreValue = 0.001
 
-# dem geometry ###########
-lddMap = str(pathlib.Path(inputFolder, "mergeldd.map"))
+  # infiltration
+  ksatValue = 0.0163
+  initialSoilMoistureFractionFromDiskValue = 0.327306
+  soilPorosityFractionValue = 0.5
+
+  # regolith geometry
+  regolithThicknessHomogeneousValue = 0.5
+
+  # subsurface water 
+  saturatedConductivityMetrePerDayValue = 37.0
+  limitingPointFractionValue = 0.276293
+  mergeWiltingPointFractionFSValue = 0.1
+  fieldCapacityFractionValue = 0.327306
+
+  # evapotranspiration
+  # penman
+  multiplierMaxStomatalConductanceValue = 1.0
+  albedoValue = 0.27
+  maxStomatalConductanceValue = 0.0067
+  vegetationHeightValue = 1.3
 
 
 # real time of first time step, duration of time step
@@ -165,7 +213,7 @@ if setOfVariablesToReport == 'full':
   interception_report_rasters = ["Vo", "Vi", "Vgf", "Vms"] # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   evapotrans_report_rasters = ["Ep", "Epc"]
   infiltration_report_rasters = ["Ii", "Ij", "Is", "Iks"]
-  runoff_report_rasters = ["Rq", "Rqs"]
+  runoff_report_rasters = ["Rq"]
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
   subsurface_report_rasters = ["Gs", "Go"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]

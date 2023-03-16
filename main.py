@@ -57,7 +57,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     self.forestNoForest = pcr.boolean(cfg.forestNoForest)
     idMap = pcr.uniqueid(self.clone)
-    oneLocationPerArea = pcr.areamaximum(idMap, self.forestNoForest) == idMap
+    oneLocationPerArea = pcr.areamaximum(idMap, pcr.spatial(self.forestNoForest)) == idMap
     self.locationsForParameters = pcr.cover(pcr.nominal(pcr.scalar(pcr.ifthen(oneLocationPerArea, self.forestNoForest)) + 1), 0)
     # end required for reporting as numpy
 
@@ -332,7 +332,12 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     demOfBedrockTopography = self.dem
 
-    stream = pcr.boolean(cfg.streamValue)
+    if cfg.mapsAsInput:
+      stream = pcr.boolean(cfg.streamValue)
+    else:
+      upstreamArea = pcr.accuflux(cfg.lddMap,pcr.cellarea())
+      stream = upstreamArea > 200000.0
+
     theSlope = pcr.slope(self.dem)
     regolithThickness = pcr.ifthenelse(stream, 0.01, regolithThicknessHomogeneous)
 
