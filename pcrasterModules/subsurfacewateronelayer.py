@@ -378,6 +378,10 @@ class SubsurfaceWaterOneLayer(component.Component):
     return amountOfMoistureThickNetAdded
 
   def updateRegolithThickness(self, newRegolithThickness):
+     # Updates the state of the regolith 'aiming at' a situation where the amount of water in the soil
+     # remains the same, it is only removed when it is above the porosity and only added when it is below the wilting
+     # point (both physically impossible soil moisture values) but otherwise it remains the same amount of
+     # water in the subsoil.
      self.convertFractionsToThickness(newRegolithThickness, self.soilPorosityFraction, self.wiltingPointFraction,
                                   self.limitingPointFraction, self.fieldCapacityFraction)
      amountOfMoistureThickNetAdded = self.possiblyAdjustSoilMoistureThickWhenRegolithThicknessChanges()

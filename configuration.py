@@ -59,7 +59,6 @@ readDistributionOfParametersFromDisk = False
 setOfVariablesToReport = 'full'
 # setOfVariablesToReport = 'filtering'
 
-
 with_shading = True
 
 if with_shading is False:
