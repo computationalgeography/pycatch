@@ -127,7 +127,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     separationDistance=3
     import generalfunctions  # not sure why this needs to be imported again
     self.samples=generalfunctions.samplingScheme(self.clone, nrSampleLocs, fractionShortDistance, separationDistance,0,0)
-    self.report(self.samples,'samples')
+    #self.report(self.samples,'samples')
     self.someLocs=pcrne(self.samples,0)
 
     # initial setting for saving grazing pressure 
@@ -144,6 +144,11 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     if cfg.reportAdHocTimeseries: 
       self.biomassTss=TimeoutputTimeseries("biomass", self, self.oneLocation, noHeader=True)
       self.soilDepthTss=TimeoutputTimeseries("soildepth", self, self.oneLocation, noHeader=True)
+      self.biomassJumpTss=TimeoutputTimeseries("biomass_jumped", self, self.oneLocation, noHeader=True)
+      self.soilDepthJumpTss=TimeoutputTimeseries("soildepth_jumped", self, self.oneLocation, noHeader=True)
+      self.biomassJump = boolean(0)
+      self.soilDepthJump = boolean(0)
+
 
 
 
@@ -173,12 +178,17 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
     # you may want to use the build-in functions returning the time step number and the
     # number of the realization:
     # print(self.currentTimeStep(), self.currentSampleNumber())
-    grazingRateIncreaseTotal=0.0003
-    grazingRateIncrease=grazingRateIncreaseTotal/(cfg.numberOfTimeSteps/2.0)
-    if self.currentTimeStep() < (cfg.numberOfTimeSteps/2.0):
-      self.grazingRate=self.grazingRate+grazingRateIncrease
-    else:
-      self.grazingRate=self.grazingRate-grazingRateIncrease
+    # increase then decrease in grazing pressure
+    #grazingRateIncreaseTotal=0.0003
+    #grazingRateIncrease=grazingRateIncreaseTotal/(cfg.numberOfTimeSteps/2.0)
+    #if self.currentTimeStep() < (cfg.numberOfTimeSteps/2.0):
+    #  self.grazingRate=self.grazingRate+grazingRateIncrease
+    #else:
+    #  self.grazingRate=self.grazingRate-grazingRateIncrease
+    # increase only in grazing pressure
+    grazingRateIncreaseTotal=0.0004
+    grazingRateIncrease=grazingRateIncreaseTotal/(cfg.numberOfTimeSteps)
+    self.grazingRate=self.grazingRate+grazingRateIncrease
     ################## 
 
     # collect grazing pressures in one numpy array for reporting
@@ -262,13 +272,50 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
         self.d_soilwashMMF.setSurfaceProperties(surfaceLdd,dem)
         self.d_runoffAccuthreshold.setSurfaceProperties(surfaceLdd)
 
-    
     else:
       # surface wash
       netDeposition, netDepositionMetre, lateralFluxKg, totalDetachKgPerCell, transportCapacityKgPerCell= \
                                             self.d_soilwashMMF.noWash()
       actualDepositionFlux=spatial(scalar(0))
       self.runoffMetreWaterDepthPerHour=scalar(0)
+
+    if cfg.jumpsInRegolithAndBiomass:
+      regolithJumpOccurs = random.random() < (1.0/(10.0*52.0))
+      if regolithJumpOccurs:
+        self.soilDepthJump = boolean(1)
+        # retrieve regolith thickness
+        regolithThickness,demOfBedrock,dem,bedrockLdd,surfaceLdd=self.d_regolithdemandbedrock.getRegolithProperties()
+        # calculate average of regolith thickness
+        averageRegolithThickness=generalfunctions.mapaverage(regolithThickness)
+        # calculate variation in regolith thickness, mean over map is zero
+        regolithVariationInThickness=regolithThickness-averageRegolithThickness
+        # draw realization from uniform distribution (single value over whole map)
+        real = mapuniform() * 0.4
+        # calculate new 'random' regolith thickness, can be negativ
+        randomRegolith = real + regolithVariationInThickness
+        # to be added to end at this new random value
+        regolithAdded = randomRegolith - regolithThickness
+        # add the regolith added to the regolith, this will make sure that not more is removed than available
+        actualDepositionFlux=self.d_regolithdemandbedrock.updateWithDeposition(regolithAdded)
+        regolithThickness,demOfBedrock,dem,bedrockLdd,surfaceLdd=self.d_regolithdemandbedrock.getRegolithProperties()
+        amountOfMoistureThickNetAdded=self.d_subsurfaceWaterOneLayer.updateRegolithThickness(regolithThickness)
+        self.d_soilwashMMF.setSurfaceProperties(surfaceLdd,dem)
+        self.d_runoffAccuthreshold.setSurfaceProperties(surfaceLdd)
+    
+      biomassJumpOccurs = random.random() < (1.0/(10.0*52.0))
+      if biomassJumpOccurs:
+        self.biomassJump = boolean(1)
+        # retrieve biomass thickness
+        biomassBeforeJump = self.d_biomassModifiedMay.retrieveBiomass()
+        # calculate average of biomass
+        averageBiomass = generalfunctions.mapaverage(biomassBeforeJump)
+        # calculate variation in biomass, mean over map is zero
+        biomassVariation = biomassBeforeJump - averageBiomass
+        # draw realization from uniform distribution (single value over whole map)
+        real = mapuniform() * 2.9
+        # calculate new 'random' regolith thickness, cut off below zero
+        randomBiomass = max(real + biomassVariation, self.d_biomassModifiedMay.minimumAllowedBiomass)
+        self.d_biomassModifiedMay.setNewBiomass(randomBiomass)
 
     if cfg.changeGeomorphology:
       # random noise
@@ -321,6 +368,12 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
 
       ###LDD, surface###
       self.d_regolithdemandbedrock.setNewRegolith(newRegolithThickness)
+
+      ### adjust regolith for random jumps TEST TEST
+      #print 'testje zoek op testje'
+      #if self.currentTimeStep() == 1000:
+      #  regolithThickness,demOfBedrock,dem,bedrockLdd,surfaceLdd=self.d_regolithdemandbedrock.getRegolithProperties()
+      
 
       # update bedrock with baselevel change
       baselevel=self.d_baselevel.getBaselevel(self.currentTimeStep())
@@ -375,6 +428,10 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
       self.biomassTss.sample(meanVariable)
       meanVariable=areaaverage(self.d_regolithdemandbedrock.regolithThickness,self.areaForAverage)
       self.soilDepthTss.sample(meanVariable)
+      self.soilDepthJumpTss.sample(self.soilDepthJump)
+      self.biomassJumpTss.sample(self.biomassJump)
+      self.soilDepthJump = boolean(0)
+      self.biomassJump = boolean(0)
     
     
   def postmcloop(self):
@@ -434,7 +491,7 @@ class CatchmentModel(DynamicModel,MonteCarloModel):
                              timeStepsToReportAll,\
                              cfg.bedrockweathering_report_rasters)
     steadyStateSoilDepth=self.d_bedrockweathering.steadyStateSoilDepth(0-baselevelRise)
-    self.report(steadyStateSoilDepth,'sssd')
+    #self.report(steadyStateSoilDepth,'sssd')
 
     # regolith
     regolithThickness=spatial(steadyStateSoilDepth)

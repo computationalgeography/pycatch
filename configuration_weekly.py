@@ -2,8 +2,7 @@ import pathlib
 
 # number of timesteps to be run 
 #numberOfTimeSteps=10000 * 52   # long run
-numberOfTimeSteps=5200   # test run
-#numberOfTimeSteps=520000   # test run
+numberOfTimeSteps=15000   # test run
 
 # option to fix both the regolith and the vegetation, not typically used
 # in normal simulations
@@ -15,14 +14,15 @@ changeGeomorphology=True
 
 # number of realizations generated
 # output is written to subdirectories 1, 2, 3, ..
-nrOfSamples = 3
+nrOfSamples = 1
 
 # calculation of early warning signals
 intervalForStatsCalculated=52
 #intervalForStatsCalculated=1
 
 # interval for map reports
-reportInterval=500
+#reportInterval=50
+reportInterval=1
 
 # for calculation of early warning signals
 # does not work anymore
@@ -49,7 +49,7 @@ calculateStatsForZones = False
 calculateStatsAverageOverMap = False
 
 # calculate and store ad hoc report of timeseries as tss file
-reportAdHocTimeseries = True
+reportAdHocTimeseries = False
 
 
 # calculate upstream totals (with accuflux) in subsurfacewateronelayer module
@@ -62,6 +62,10 @@ calculateUpstreamTotals = False
 # when True, a particle filtering run is done
 # first time users should have this False
 filtering = False
+
+# introduce random jumps in biomass and regolith thickness
+# for normal runs this should be False
+jumpsInRegolithAndBiomass = False
 
 #
 # Reporting for the model components
@@ -91,7 +95,7 @@ elif setOfVariablesToReport == 'some':
   soilwashMMF_report_rasters = []
   exchange_report_rasters = []
   soilwashMMF_report_rasters = []
-  regolith_report_rasters = ["Ast"]
+  regolith_report_rasters = ["Ast", "Ade"]
   bedrockweathering_report_rasters = []
   evapotranspirationsimple_report_rasters = []
   biomassmodifiedmay_report_rasters = ["Xs"]

@@ -154,4 +154,5 @@ class BiomassModifiedMay(component.Component):
     self.biomass=biomass
     self.LAI=self.LAIPerBiomass*self.biomass
 
-
+  def retrieveBiomass(self):
+    return self.biomass
