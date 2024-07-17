@@ -4,7 +4,8 @@ import pathlib
 numberOfTimeSteps = 10968
 
 # folder with input files (maps, timeseries)
-inputFolder = "inputs"
+#inputFolder = "inputs"
+inputFolder = "../switzerland"
 
 # select maps as input parameters and initial values or uniform values over the area
 mapsAsInput = False
@@ -20,10 +21,11 @@ nrOfSamples = 1
 # but this version uses three different ones
 
 # definition for components were all timesteps should be reported
-timeStepsToReportAll = list(range(1, numberOfTimeSteps + 1, 1))
+#timeStepsToReportAll = list(range(1, numberOfTimeSteps + 1, 1))
+timeStepsToReportAll = list(range(100, numberOfTimeSteps + 1, 100))
 
 # used for discharge only
-timeStepsToReportRqs = list(range(20, numberOfTimeSteps + 1, 20))
+timeStepsToReportRqs = list(range(100, numberOfTimeSteps + 1, 100))
 
 # definition for components were a subset of timesteps should be reported
 timeStepsToReportSome = list(range(100, numberOfTimeSteps + 1, 100))
@@ -56,10 +58,11 @@ readDistributionOfParametersFromDisk = False
 # either 'full' or 'filtering'. These are passed to the class of a component
 # where it the variables that are reported can be defined, i.e. either full or filtering
 # early users will always use full
-setOfVariablesToReport = 'full'
-# setOfVariablesToReport = 'filtering'
+#setOfVariablesToReport = 'full'
+setOfVariablesToReport = 'filtering'
 
 with_shading = True
+#with_shading = False
 
 if with_shading is False:
   fractionReceivedValue = 1.0
@@ -222,9 +225,11 @@ elif setOfVariablesToReport == 'filtering':
   interception_report_rasters = []  # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   evapotrans_report_rasters = []
   infiltration_report_rasters = []
-  runoff_report_rasters = []
+  runoff_report_rasters = ["Rq"]
   shading_report_rasters = []
-  subsurface_report_rasters = []   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters = ["Gs"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
-  randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
-  exchange_report_rasters = ["Xrc", "Xra"]
+  #randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
+  randomparameters_report_rasters = []
+  #exchange_report_rasters = ["Xrc", "Xra"]
+  exchange_report_rasters = []
