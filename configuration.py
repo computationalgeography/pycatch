@@ -21,14 +21,16 @@ nrOfSamples = 1
 # but this version uses three different ones
 
 # definition for components were all timesteps should be reported
-#timeStepsToReportAll = list(range(1, numberOfTimeSteps + 1, 1))
-timeStepsToReportAll = list(range(100, numberOfTimeSteps + 1, 100))
+timeStepsToReportAll = list(range(1, numberOfTimeSteps + 1, 1))
+#timeStepsToReportAll = list(range(100, numberOfTimeSteps + 1, 100))
 
 # used for discharge only
-timeStepsToReportRqs = list(range(100, numberOfTimeSteps + 1, 100))
+timeStepsToReportRqs = list(range(1, numberOfTimeSteps + 1, 1))
+#timeStepsToReportRqs = list(range(100, numberOfTimeSteps + 1, 100))
 
 # definition for components were a subset of timesteps should be reported
-timeStepsToReportSome = list(range(100, numberOfTimeSteps + 1, 100))
+timeStepsToReportSome = list(range(1, numberOfTimeSteps + 1, 1))
+#timeStepsToReportSome = list(range(100, numberOfTimeSteps + 1, 100))
 
 # switch to report for locations as small numpy files
 # mainly used for particle filtering
@@ -61,8 +63,8 @@ readDistributionOfParametersFromDisk = False
 #setOfVariablesToReport = 'full'
 setOfVariablesToReport = 'filtering'
 
-with_shading = True
-#with_shading = False
+#with_shading = True
+with_shading = False
 
 if with_shading is False:
   fractionReceivedValue = 1.0
