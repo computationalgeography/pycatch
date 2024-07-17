@@ -60,15 +60,15 @@ The inputs directory gives these maps for the small catchments in Spain.
 Maps needed in addition to DEM:
 ----------------------------------
 
-mergeFieldCapacityFractionFS.map    # derive from geology
-mergeLimitingPointFractionFS.map    # derive from geology
-mergePorosityFractionFS.map         # derive from geology
-mergeStream.map                     # pixels with a stream (can also be calculated from the upstream area)
-mergeVegAlbedoFS.map                # derive from vegetation classes map or remote sensing products, fixed over time (assumption)
-mergeVegHeightFS.map                # idem albedo
-mergeVegLAIFS.map                   # idem albedo 
-mergeVegStomatalFS.map              # idem albedo
-mergeWiltingPointFractionFS.map     # derive from geology
+- mergeFieldCapacityFractionFS.map    # derive from geology
+- mergeLimitingPointFractionFS.map    # derive from geology
+- mergePorosityFractionFS.map         # derive from geology
+- mergeStream.map                     # pixels with a stream (can also be calculated from the upstream area)
+- mergeVegAlbedoFS.map                # derive from vegetation classes map or remote sensing products, fixed over time (assumption)
+- mergeVegHeightFS.map                # idem albedo
+- mergeVegLAIFS.map                   # idem albedo 
+- mergeVegStomatalFS.map              # idem albedo
+- mergeWiltingPointFractionFS.map     # derive from geology
 
 
 Timeseries needed:
@@ -78,11 +78,11 @@ Could be for each variable a single timeseries for the whole catchmenlt (to star
 Consider using https://chelsa-climate.org, currently a state of the art reanalysis data set.
 We need at least 2 years.
 
-airTemperatureArnaJulAugSep0506.tss
-incomingShortwaveRadiationArnasJulAugSep0506.tss
-rainfallFluxTwoCatchsJulAugSep0506.tss
-relativeHumidityArnasJulAugSep0506.tss
-windVelocityArnasJulAugSep0506.tss
+- airTemperatureArnaJulAugSep0506.tss
+- incomingShortwaveRadiationArnasJulAugSep0506.tss
+- rainfallFluxTwoCatchsJulAugSep0506.tss
+- relativeHumidityArnasJulAugSep0506.tss
+- windVelocityArnasJulAugSep0506.tss
 
 
 
