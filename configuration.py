@@ -5,7 +5,7 @@ numberOfTimeSteps = 10968
 
 # folder with input files (maps, timeseries)
 #inputFolder = "inputs"
-inputFolder = "../switzerland"
+inputFolder = "../switzerland/40m_small_area"
 
 # select maps as input parameters and initial values or uniform values over the area
 mapsAsInput = False
@@ -63,12 +63,15 @@ readDistributionOfParametersFromDisk = False
 #setOfVariablesToReport = 'full'
 setOfVariablesToReport = 'filtering'
 
-#with_shading = True
-with_shading = False
+with_shading = True
+#with_shading = False
 
 if with_shading is False:
-  fractionReceivedValue = 1.0
-  fractionReceivedFlatSurfaceValue = 1.0
+  print("TEMPORARY SHADING SETTING IN CONFIGURATION.py")
+  #fractionReceivedValue = 1.0
+  #fractionReceivedFlatSurfaceValue = 1.0
+  fractionReceivedValue = 0.0
+  fractionReceivedFlatSurfaceValue = 0.0 
 
 ################
 # model inputs #
@@ -192,6 +195,7 @@ else:
 # real time of first time step, duration of time step
 # IMPORTANT NOTE: THIS IS NOW UTC TIME ALMOST CERTAINLY AT LEAST FOR SHADING
 print("# IMPORTANT NOTE: THIS IS NOW UTC TIME ALMOST CERTAINLY AT LEAST FOR SHADING")
+print("# IMPORTANT NOTE: ALSO ONE NEEDS TO ENTER GEOG COORDINATES")
 startTimeYearValue = 2005
 startTimeMonthValue = 7
 startTimeDayValue = 1
@@ -228,7 +232,8 @@ elif setOfVariablesToReport == 'filtering':
   evapotrans_report_rasters = []
   infiltration_report_rasters = []
   runoff_report_rasters = ["Rq"]
-  shading_report_rasters = []
+  #shading_report_rasters = []
+  shading_report_rasters = ["Mfs", "Msc", "Msh"]
   subsurface_report_rasters = ["Gs"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   #randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]

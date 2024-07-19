@@ -48,6 +48,15 @@ For displaying some map outputs, use setOfVariablesToReport = 'some' in configur
 grazing pressure for a defined interval. These can be displayed using the PCRaster Aguila visualisation tool.
 
 
+To do's PyCatch hourly model
+=================================
+
+- Use correct geographical coordinates
+- Check time alignment (precip)
+- Consider using solar inclination and topography (it now only uses shading effect)
+- Why is Rq max value greater than 100? (on output maps)
+
+
 Data needed for PyCatch hourly model
 ======================================
 

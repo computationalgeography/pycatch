@@ -30,7 +30,10 @@ def createListOfSolarCritAngles(step,extendedDem):
   azimuthRadians=supportingfunctions.frange(2*math.pi,0.0,step,2) + [2*math.pi]
   set=[]
   for azimuth in azimuthRadians:
-    solarCritAngle=horizontan(extendedDem,azimuth)
+    # horizontan, assumed here it returns angle in radians, 1.57 is 90 degrees, position of sun
+    # 90 degrees; the cover operation is needed as horizontan does not calculate angles on the edge
+    # of the map, it is assumed these can always be in the sun (during the day)
+    solarCritAngle=cover(horizontan(extendedDem,azimuth),1.57)
     set.append([azimuth,solarCritAngle])
   return set
 

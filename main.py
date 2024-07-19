@@ -125,9 +125,12 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       # we assume all cells receive the same solar radiation as measured by the device
       # except for shading, if shading, there is nothing received
       fractionReceived = pcr.ifthenelse(shaded, pcr.scalar(0.0), pcr.scalar(1.0))
+      #self.report(fractionReceived,'fr')
+      #self.report(pcr.scalar(fractionReceivedFlatSurface),'frfs')
     else:
-      fractionReceived = pcr.scalar(cfg.fractionReceivedValue)
-      fractionReceivedFlatSurface = pcr.scalar(cfg.fractionReceivedFlatSurfaceValue)
+      fractionReceived = pcr.spatial(pcr.scalar(cfg.fractionReceivedValue))
+      fractionReceivedFlatSurface = pcr.spatial(pcr.scalar(cfg.fractionReceivedFlatSurfaceValue))
+
 
     fWaterPotential = self.d_subsurfaceWaterOneLayer.getFWaterPotential()
 
@@ -163,6 +166,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                             elevationAboveSeaLevelOfMeteoStation,
                             fWaterPotential,
                             rainfallFlux < 0.000000000001)
+
 
     potentialEvapotranspirationFluxNoNegativeValues = pcr.max(0.0, potentialEvapotranspirationFlux)
     potentialEvapotranspirationFluxFromCanopyNoNegativeValues = pcr.max(0.0, potentialEvapotranspirationFromCanopyFlux)
@@ -498,7 +502,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     increaseInSurfaceStore = self.d_surfaceStore.budgetCheck(currentSampleNumber, currentTimeStep)
     pcr.report(increaseInSurfaceStore, pcrfw.generateNameST('incS', currentSampleNumber, currentTimeStep))
     increaseInSurfaceStoreQM = pcr.catchmenttotal(increaseInSurfaceStore, self.ldd) * pcr.cellarea()
-    pcr.report(increaseInSurfaceStoreQM, pcrfw.generateNameST('testb', currentSampleNumber, currentTimeStep))
 
     # let op: infiltration store is directly passed to subsurface store, thus is not a real store
     increaseInInfiltrationStore = self.d_infiltrationgreenandampt.budgetCheck(currentSampleNumber, currentTimeStep)
