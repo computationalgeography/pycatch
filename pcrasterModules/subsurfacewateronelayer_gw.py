@@ -80,6 +80,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.wiltingPointThick = pcr.scalar(0)
     self.potentialPercolationAmount = pcr.scalar(0)
     self.degreeOfSaturation = pcr.scalar(0)
+    self.groundWaterDepthBelowSoil = pcr.scalar(0)
 
     ####
     # real inits
@@ -129,7 +130,8 @@ class SubsurfaceWaterOneLayer(component.Component):
                                 # 'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
                                 # 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour,
                                 self.fileNamePrefix + 'Gppa': self.potentialPercolationAmount,
-                                self.fileNamePrefix + 'Gdos': self.degreeOfSaturation
+                                self.fileNamePrefix + 'Gdos': self.degreeOfSaturation,
+                                self.fileNamePrefix + 'Ggwd': self.groundWaterDepthBelowSoil
                            }
     # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
@@ -392,7 +394,13 @@ class SubsurfaceWaterOneLayer(component.Component):
                                  self.maximumAbstractionThickUpToFieldCapacity)
     return self.potentialPercolationAmount
 
-#  def potentialCapillaryRise(unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
+  def updateGroundWaterDepthBelowSoil(self):
+    groundWaterLevelAboveBottomOfLayer = self.soilMoistureThick / self.soilPorosityFraction
+    self.groundWaterDepthBelowSoil = pcr.max(0.0, self.regolithThickness - groundWaterLevelAboveBottomOfLayer)
+
+  def potentialCapillaryRise(unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
+    updateGroundWaterDepthBelowSoil()
+    maybe neglect the 0.5 in eq 9.
     
 
 

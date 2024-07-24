@@ -197,6 +197,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # to undersaturation of the soil layer, so potentialPercolation needs to check for this
     potentialPercolation = self.d_subsurfaceWaterOneLayer.potentialPercolation()
 
+    #self.d_groundWaterLayer.updateGroundWaterDepthBelowSoil()
+
     # temporary to get it running
     self.upwardSeepageFluxFromGroundWater = pcr.scalar(0)
 
