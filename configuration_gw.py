@@ -185,10 +185,15 @@ else:
   groundwaterLayerThicknessHomogeneousValue = 2.0
 
   # subsurface water 
-  saturatedConductivityMetrePerDayValue = 37.0
-  limitingPointFractionValue = 0.276293
+  #saturatedConductivityMetrePerDayValue = 37.0
+  #limitingPointFractionValue = 0.276293
+  #mergeWiltingPointFractionFSValue = 0.1
+  #fieldCapacityFractionValue = 0.327306
+  # simple values for debugging
+  saturatedConductivityMetrePerDayValue = 40.0
+  limitingPointFractionValue = 0.2
   mergeWiltingPointFractionFSValue = 0.1
-  fieldCapacityFractionValue = 0.327306
+  fieldCapacityFractionValue = 0.4
 
   # evapotranspiration
   # penman
@@ -229,8 +234,8 @@ if setOfVariablesToReport == 'full':
   infiltration_report_rasters = ["Ii", "Ij", "Is", "Iks"]
   runoff_report_rasters = ["Rq"]
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
-  subsurface_report_rasters = ["Gs", "Go"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
-  subsurface_report_rasters_gw = ["GGs", "GGo"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters = ["Gs", "Go", "Gppa"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = []   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
@@ -241,8 +246,8 @@ elif setOfVariablesToReport == 'filtering':
   runoff_report_rasters = ["Rq"]
   #shading_report_rasters = []
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
-  subsurface_report_rasters = ["Gs"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
-  subsurface_report_rasters_gw = ["GGs"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters = ["Gs", "Gppa", "Gdos"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = []   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   #randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   randomparameters_report_rasters = []

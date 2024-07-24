@@ -197,13 +197,17 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # to undersaturation of the soil layer, so potentialPercolation needs to check for this
     potentialPercolation = self.d_subsurfaceWaterOneLayer.potentialPercolation()
 
+    # temporary to get it running
+    self.upwardSeepageFluxFromGroundWater = pcr.scalar(0)
+
 #    # potential capillary rise from groundwater to soil layer, this is what the groundwater layer can give independent
 #    # of the soil layer status regarding storage status, again, it will not lead to undersaturation of the groundwater
 #    # layer, so potentialCapillaryRise needs to check for this
-#    unsaturatedHydraulicConductivitySoilLayer = self.d_subsurfaceWaterOneLayer.unsaturatedHydraulicConductivity()
-#    saturationDegreeSoilLayer = self.d_subsurfaceWaterOneLayer.saturationDegree()
+#    unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer = \
+#                            self.d_subsurfaceWaterOneLayer.unsaturatedConductivity()
+
 #    potentialCapillaryRise = self.d_groundWaterLayer.potentialCapillaryRise( \
-#                             unsaturatedHydraulicConductivitySoilLayer, saturationDegreeSoilLayer)
+#                             unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer)
 #
 #    # percolation or capillary rise, depending on the soil moisture status of the two layers, water goes down
 #    # or up, not both
@@ -226,11 +230,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 #    # input and output of function needs to be the same as groundwater conditions have already been checked for
 #    # above
 #    actualCapillaryRise = self.d_groundWaterLayer.abstractWater(actualCapillaryRise)
-
-    # upward seepage from groundwater
-    # needs to be added to the rainfall/throughfall in the next timestep
-    self.upwardSeepageFluxFromGroundWater = self.d_groundWaterLayer.lateralFlow() + \
-                                       upwardSeepageFluxFromPercolationToGroundwater
+#
+#    # upward seepage from groundwater
+#    # needs to be added to the rainfall/throughfall in the next timestep
+#    self.upwardSeepageFluxFromGroundWater = self.d_groundWaterLayer.lateralFlow() + \
+#                                       upwardSeepageFluxFromPercolationToGroundwater
 
     ## End Ground water layer ##
 
@@ -495,7 +499,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                  self.d_infiltrationgreenandampt, \
                  self.d_evapotranspirationPenman, \
                  self.d_runoffAccuthreshold, \
-                 self.d_subsurfaceWaterOneLayer
+                 self.d_subsurfaceWaterOneLayer, \
+                 self.d_groundWaterLayer
                  ]
 
     if cfg.with_shading:

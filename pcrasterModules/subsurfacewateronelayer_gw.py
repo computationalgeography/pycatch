@@ -78,6 +78,8 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.variablesToReport = {}
     self.variablesAsNumpyToReport = {}
     self.wiltingPointThick = pcr.scalar(0)
+    self.potentialPercolationAmount = pcr.scalar(0)
+    self.degreeOfSaturation = pcr.scalar(0)
 
     ####
     # real inits
@@ -111,18 +113,23 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.lateralFlowFluxAmountCum = pcr.scalar(0)
     self.upwardSeepageCum = pcr.scalar(0)
 
+    # for filenames
+    self.fileNamePrefix = fileNamePrefix
+
   def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
-                                fileNamePrefix + 'Gs': self.soilMoistureThick,
+                                self.fileNamePrefix + 'Gs': self.soilMoistureThick,
                                 # 'Gad': self.maximumAdditionThick,
-                                fileNamePrefix + 'Go': self.actualAbstractionFlux,
+                                self.fileNamePrefix + 'Go': self.actualAbstractionFlux,
                                 # 'Gi': self.actualAdditionFlux,
                                 # 'Gq': self.lateralFlowFluxCubicMetresPerHour,
                                 # 'Gwp': self.fWaterPotential,
                                 # 'rts': self.regolithThickness,
                                 # 'Gks': self.saturatedConductivityMetrePerDay
                                 # 'Gxt': self.totalUpwardSeepageInUpstreamAreaCubicMetrePerHour,
-                                # 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour
+                                # 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour,
+                                self.fileNamePrefix + 'Gppa': self.potentialPercolationAmount,
+                                self.fileNamePrefix + 'Gdos': self.degreeOfSaturation
                            }
     # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
@@ -239,6 +246,11 @@ class SubsurfaceWaterOneLayer(component.Component):
     # amount of water that can be taken out of the storage, up to wilting point
     self.maximumAbstractionThick = self.soilMoistureThick - self.wiltingPointThick
 
+  def calculateMaximumAbstractionThickUpToFieldCapacity(self):
+    # amount of water that can be taken out of the storage, up to wilting point
+    self.maximumAbstractionThickUpToFieldCapacity = pcr.max(0.0, \
+                                 self.soilMoistureThick - self.fieldCapacityThick)
+
   def getMaximumAbstractionFlux(self):
     self.calculateMaximumAbstractionThick()
     maximumAbstractionFlux = self.amountToFlux(self.maximumAbstractionThick)
@@ -347,6 +359,42 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.fWaterPotential = pcr.ifthenelse(self.soilMoistureThick > self.limitingPointThick,
                            pcr.scalar(1), fWaterPotentialTmpWilt)
     return self.fWaterPotential
+
+  def updateDegreeOfSaturation(self):
+    # degree of saturation calculated following van Beek 2009, used in
+    # potentialPercolation method
+    degreeOfSaturationTmp = pcr.max(0.0,(self.soilMoistureThick-self.fieldCapacityThick)) / \
+                            (self.soilPorosityThick-self.fieldCapacityThick)
+    self.degreeOfSaturation = pcr.max(pcr.min(degreeOfSaturationTmp,pcr.scalar(1.0)), 0.0)
+
+  def unsaturatedConductivity(self):
+    # unsaturated conductivity of the layer, this is the same as the potential percolation
+    # following Beek 2009
+    self.updateDegreeOfSaturation()
+    saturatedConductivityMetrePerHour = self.saturatedConductivityMetrePerDay / 24.0
+    unsaturatedConductivity = saturatedConductivityMetrePerHour * \
+                              self.degreeOfSaturation
+    return unsaturatedConductivity, self.degreeOfSaturation
+
+  def potentialPercolation(self):
+    # calculates the percolation following van Beek 2009; potential percolation is calculated
+    # which is the flux that can leave the layer to its lower layer not taking into account
+    # the state of the lower layer; it accounts for moisture conditions of the current layer, i.e.
+    # it will not get undersaturated if potentialPercolation is percolating (not below field capacity)
+    # as percolation is limited by field capacity it will basically never get lower than field
+    # capacity due to percolation
+    # residual value in van Beek 2009 is moisture content at field capacity (assumed)
+    potentialPercolationNotLimitedByMoistureContentFlux,tmp = self.unsaturatedConductivity()
+    potentialPercolationNotLimitedByMoistureContentAmount = self.fluxToAmount( \
+                                             potentialPercolationNotLimitedByMoistureContentFlux)
+    self.calculateMaximumAbstractionThickUpToFieldCapacity()
+    self.potentialPercolationAmount = pcr.min(potentialPercolationNotLimitedByMoistureContentAmount,
+                                 self.maximumAbstractionThickUpToFieldCapacity)
+    return self.potentialPercolationAmount
+
+#  def potentialCapillaryRise(unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
+    
+
 
 #  def report(self, sample, timestep, nrOfTimeSteps):
 #    self.actualAdditionFlux=self.amountToFlux(self.actualAdditionFluxAmount)

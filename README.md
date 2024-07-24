@@ -55,6 +55,8 @@ To do's PyCatch hourly model
 - Check time alignment (precip)
 - Consider using solar inclination and topography (it now only uses shading effect)
 - Why is Rq max value greater than 100? (on output maps)
+- Ground water
+  - Check the ldd's for both soil and ground water layer
 
 
 Groundwater layer
