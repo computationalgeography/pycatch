@@ -57,6 +57,42 @@ To do's PyCatch hourly model
 - Why is Rq max value greater than 100? (on output maps)
 
 
+Groundwater layer
+----------------------
+
+Geometry:
+- The first x m is always first layer ('soil'), x is about 1 m
+- Below x, the groundwater layer starts up to 'bed rock'
+- If the regolith thickness is below x, the groundwater layer is made very thin (0.01 m?)
+
+Lateral flow:
+- Fixed local drain direction (same as surface), i.e. not depending on water levels
+- Gradient equal to slope of surface or equal to slope of groundwater surface (to be decided)
+- Use saturated conductivity (same as first layer)
+- Note that the first layer will still have lateral flow as well (otherwise there would not be
+  'interflow' on hillslopes
+
+Upward seepage:
+- Seepage is all the water above the maximum storage capacity of the layer
+- Pass it on as 'recharge' of the top layer (i.e. like rain)
+
+Percolation from top layer:
+- Amount is up to field capacity
+- See van Beek (2012), van Beek (2009). Van Beek 2009 eq 5, but use instead of 'residual moisture content
+- Add to the groundwater layer (always - it will be removed again through upward seepage)
+
+Capillary rise (it could also be left out for now?, it will be zero with gw depth > 5 m or so):
+- See van Beek (2009), eq. 9, but use instead of 'residual moisture content
+  the field capacity (this is the same?)', no capillary rise if gw depth > 5 m (or better use linear
+  function, between zero and five m depth to groundwater
+
+
+
+Evapotranspiration:
+- Only occurs from the top layer
+
+
+
 Data needed for PyCatch hourly model
 ======================================
 
