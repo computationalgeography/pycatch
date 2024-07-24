@@ -45,7 +45,8 @@ class SubsurfaceWaterOneLayer(component.Component):
               calculateUpstreamTotals,
               timeStepDuration,
               timeStepsToReport,
-              setOfVariablesToReport):
+              setOfVariablesToReport,
+              fileNamePrefix):
 
     ######
     # inits only for suspend and resume in filtering
@@ -112,9 +113,9 @@ class SubsurfaceWaterOneLayer(component.Component):
 
   def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
-                                'Gs': self.soilMoistureThick,
+                                fileNamePrefix + 'Gs': self.soilMoistureThick,
                                 # 'Gad': self.maximumAdditionThick,
-                                'Go': self.actualAbstractionFlux,
+                                fileNamePrefix + 'Go': self.actualAbstractionFlux,
                                 # 'Gi': self.actualAdditionFlux,
                                 # 'Gq': self.lateralFlowFluxCubicMetresPerHour,
                                 # 'Gwp': self.fWaterPotential,

@@ -7,7 +7,7 @@ import os
 # add path to modules required
 sys.path.append("./pcrasterModules/")
 
-import configuration as cfg
+import configuration_gw as cfg
 
 # PCRaster itself
 import pcraster as pcr
@@ -417,7 +417,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                    cfg.calculateUpstreamTotals,
                                    self.timeStepDurationHours,
                                    cfg.timeStepsToReportSome,
-                                   cfg.subsurface_report_rasters)
+                                   cfg.subsurface_report_rasters,
+                                   '')
 
     ####################
     # ground water #
@@ -441,7 +442,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                    cfg.calculateUpstreamTotals,
                                    self.timeStepDurationHours,
                                    cfg.timeStepsToReportSome,
-                                   cfg.subsurface_report_rasters)
+                                   cfg.subsurface_report_rasters,
+                                   'G')
 
 
     ##########
