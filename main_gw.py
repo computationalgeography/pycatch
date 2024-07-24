@@ -279,6 +279,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                   0.025, 0.05, pcr.nominal(1), pcr.scalar(cfg.ksatValue), cfg.createRealizations)
       regolithThicknessHomogeneous = generalfunctions.areauniformBounds(
                                   1.0, 3.5, cfg.areas, pcr.scalar(cfg.regolithThicknessHomogeneousValue), cfg.createRealizations)
+      groundWaterLayerThicknessHomogeneous = generalfunctions.areauniformBounds(
+                                  1.0, 3.5, cfg.areas, pcr.scalar(cfg.groundwaterLayerThicknessHomogeneousValue), cfg.createRealizations)
       saturatedConductivityMetrePerDay = generalfunctions.mapuniformBounds(
                                   25.0, 40.0, pcr.scalar(cfg.saturatedConductivityMetrePerDayValue), cfg.createRealizations)
       multiplierMaxStomatalConductance = generalfunctions.mapuniformBounds(
@@ -385,7 +387,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       upstreamArea = pcr.accuflux(cfg.lddMap,pcr.cellarea())
       stream = upstreamArea > 200000.0
 
-    theSlope = pcr.slope(self.dem)
     regolithThickness = pcr.ifthenelse(stream, 0.01, regolithThicknessHomogeneous)
 
     self.multiplierWiltingPoint = pcr.scalar(1.0)
@@ -407,6 +408,30 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                    self.ldd,
                                    demOfBedrockTopography,
                                    regolithThickness,
+                                   initialSoilMoistureFraction,
+                                   soilPorosityFraction,
+                                   wiltingPointFraction,
+                                   fieldCapacityFraction,
+                                   limitingPointFraction,
+                                   saturatedConductivityMetrePerDay,
+                                   cfg.calculateUpstreamTotals,
+                                   self.timeStepDurationHours,
+                                   cfg.timeStepsToReportSome,
+                                   cfg.subsurface_report_rasters)
+
+    ####################
+    # ground water #
+    ####################
+
+    # everything the same as subsurfacewateronelayer (soil) except:
+    # thickness
+
+    groundWaterLayerThickness = pcr.ifthenelse(stream, 0.2, groundWaterLayerThicknessHomogeneous)
+
+    self.d_groundWaterLayer = subsurfacewateronelayer.SubsurfaceWaterOneLayer(
+                                   self.ldd,
+                                   demOfBedrockTopography,
+                                   groundWaterLayerThickness,
                                    initialSoilMoistureFraction,
                                    soilPorosityFraction,
                                    wiltingPointFraction,
