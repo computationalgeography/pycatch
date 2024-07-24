@@ -190,9 +190,10 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                                   potentialEvapotranspirationFluxNoNegativeValues
     actualAbstractionFluxFromSubsurface = self.d_subsurfaceWaterOneLayer.abstractWater(potentialEvapotranspirationFluxFromSubsurface)
 
+
     ## Ground water layer ##
 
-    # potential percolation from soil layer, function of moisture content in soil layer only, it will not lead
+    # potential percolation flux from soil layer, function of moisture content in soil layer only, it will not lead
     # to undersaturation of the soil layer, so potentialPercolation needs to check for this
     potentialPercolation = self.d_subsurfaceWaterOneLayer.potentialPercolation()
 
