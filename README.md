@@ -60,6 +60,8 @@ To do's PyCatch hourly model
 Groundwater layer
 ----------------------
 
+All new things in files with extension _gg
+
 Geometry:
 - The first x m is always first layer ('soil'), x is about 1 m
 - Below x, the groundwater layer starts up to 'bed rock'

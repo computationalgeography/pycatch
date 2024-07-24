@@ -63,8 +63,8 @@ readDistributionOfParametersFromDisk = False
 #setOfVariablesToReport = 'full'
 setOfVariablesToReport = 'filtering'
 
-with_shading = True
-#with_shading = False
+#with_shading = True
+with_shading = False
 
 if with_shading is False:
   print("TEMPORARY SHADING SETTING IN CONFIGURATION.py")
@@ -136,6 +136,9 @@ if mapsAsInput:
   # regolith geometry
   regolithThicknessHomogeneousValue = 0.5
 
+  # groundwater layer geometry
+  groundwaterLayerThicknessHomogeneousValue = 2.0
+
   # location of the stream, used to adjust regolith thickness there
   streamValue = str(pathlib.Path(inputFolder, "mergeStream.map"))
 
@@ -177,6 +180,9 @@ else:
 
   # regolith geometry
   regolithThicknessHomogeneousValue = 0.5
+
+  # groundwater layer geometry
+  groundwaterLayerThicknessHomogeneousValue = 2.0
 
   # subsurface water 
   saturatedConductivityMetrePerDayValue = 37.0
@@ -224,6 +230,7 @@ if setOfVariablesToReport == 'full':
   runoff_report_rasters = ["Rq"]
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
   subsurface_report_rasters = ["Gs", "Go"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = ["GGs", "GGo"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
@@ -235,6 +242,7 @@ elif setOfVariablesToReport == 'filtering':
   #shading_report_rasters = []
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
   subsurface_report_rasters = ["Gs"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = ["GGs"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   #randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   randomparameters_report_rasters = []
