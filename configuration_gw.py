@@ -137,7 +137,7 @@ if mapsAsInput:
   regolithThicknessHomogeneousValue = 0.5
 
   # groundwater layer geometry
-  groundwaterLayerThicknessHomogeneousValue = 2.0
+  groundWaterLayerThicknessHomogeneousValue = 10.0
 
   # location of the stream, used to adjust regolith thickness there
   streamValue = str(pathlib.Path(inputFolder, "mergeStream.map"))
@@ -182,7 +182,7 @@ else:
   regolithThicknessHomogeneousValue = 0.5
 
   # groundwater layer geometry
-  groundwaterLayerThicknessHomogeneousValue = 2.0
+  groundWaterLayerThicknessHomogeneousValue = 10.0
 
   # subsurface water 
   #saturatedConductivityMetrePerDayValue = 37.0
@@ -235,7 +235,7 @@ if setOfVariablesToReport == 'full':
   runoff_report_rasters = ["Rq"]
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
   subsurface_report_rasters = ["Gs", "Go", "Gppa"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
-  subsurface_report_rasters_gw = ["GGgwd"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = ["GGs", "GGgwd", "GGpcr", "GGpcrf"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
@@ -247,7 +247,7 @@ elif setOfVariablesToReport == 'filtering':
   #shading_report_rasters = []
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
   subsurface_report_rasters = ["Gs", "Gppa", "Gdos"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
-  subsurface_report_rasters_gw = ["GGgwd"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = ["GGs", "GGgwd", "GGpcr", "GGpcrf"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   #randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   randomparameters_report_rasters = []

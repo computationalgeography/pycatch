@@ -81,6 +81,8 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.potentialPercolationAmount = pcr.scalar(0)
     self.degreeOfSaturation = pcr.scalar(0)
     self.groundWaterDepthBelowSoil = pcr.scalar(0)
+    self.potentialCapillaryRiseAmount = pcr.scalar(0)
+    self.potentialCapillaryRiseNotCheckedFlux = pcr.scalar(0)
 
     ####
     # real inits
@@ -131,7 +133,9 @@ class SubsurfaceWaterOneLayer(component.Component):
                                 # 'Got': self.totalActualAbstractionInUpstreamAreaCubicMetrePerHour,
                                 self.fileNamePrefix + 'Gppa': self.potentialPercolationAmount,
                                 self.fileNamePrefix + 'Gdos': self.degreeOfSaturation,
-                                self.fileNamePrefix + 'Ggwd': self.groundWaterDepthBelowSoil
+                                self.fileNamePrefix + 'Ggwd': self.groundWaterDepthBelowSoil,
+                                self.fileNamePrefix + 'Gpcr': self.potentialCapillaryRiseAmount,
+                                self.fileNamePrefix + 'Gpcrf': self.potentialCapillaryRiseNotCheckedFlux
                            }
     # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
@@ -394,13 +398,40 @@ class SubsurfaceWaterOneLayer(component.Component):
                                  self.maximumAbstractionThickUpToFieldCapacity)
     return self.potentialPercolationAmount
 
-  def updateGroundWaterDepthBelowSoil(self):
+  def updateGroundWaterDepthBelowTopOfLayer(self):
+    # calculates thickness of soil moisture assuming porespace above 'groundwater' (saturated zone)
+    # is completely dry and then the distance (m) between top of layer and the 'groundwater' surface
+    # typically used for the lower groundwater layer
     groundWaterLevelAboveBottomOfLayer = self.soilMoistureThick / self.soilPorosityFraction
     self.groundWaterDepthBelowSoil = pcr.max(0.0, self.regolithThickness - groundWaterLevelAboveBottomOfLayer)
 
-  def potentialCapillaryRise(unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
-    updateGroundWaterDepthBelowSoil()
-    maybe neglect the 0.5 in eq 9.
+  def updatePotentialCapillaryRiseFlux(self,unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
+    # equation 9 in van Beek 2009, modified i.e. 0.5 * f is changed into a linear function returning 0 up to
+    # 1 as linear function of groundwater depth between 0 and maxDepth, typically 5 m
+    # depth (m) of groundwater below which no cap. rise occurs anymore
+    # Takes into account water that can be substracted from groundwater (up to field capacity)
+    # it is unclear why there is 0.5 in eq 9, tuned?
+    maxDepth = pcr.scalar(5.0)
+    self.updateGroundWaterDepthBelowTopOfLayer()
+    saturatedConductivityMetrePerHour = self.saturatedConductivityMetrePerDay / 24.0
+    # first term in eq 9
+    # formulation following van Beek eq 9 (causes cap rise to go up if soil moisture goes up due to increase in unsat
+    # conductivity of the soil layer
+    #conductivityMetrePerHour = pcr.sqrt(saturatedConductivityMetrePerHour * unsaturatedConductivitySoilLayerMetrePerHour)
+    # formulation by me, most of the cap rise is in the groundwater so not strange to use the sat of this layer
+    conductivityMetrePerHour = saturatedConductivityMetrePerHour
+    oneMinusSaturationDegreeSoil = pcr.max(pcr.min(1.0 - saturationDegreeSoilLayer,1.0),0.0)
+    groundwaterDepthProportion = pcr.max(maxDepth - self.groundWaterDepthBelowSoil,0.0)/maxDepth
+    self.potentialCapillaryRiseNotCheckedFlux = conductivityMetrePerHour * oneMinusSaturationDegreeSoil * groundwaterDepthProportion
+
+  def getPotentialCapillaryRiseAmount(self,unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
+    # Takes into account water that can be substracted from groundwater (up to field capacity)
+    self.updatePotentialCapillaryRiseFlux(unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer)
+    self.potentialCapillaryRiseAmountNotChecked = self.fluxToAmount(self.potentialCapillaryRiseNotCheckedFlux)
+    amountAboveFieldCapacity = pcr.max(self.soilMoistureThick - self.fieldCapacityThick,0.0)
+    self.potentialCapillaryRiseAmount = pcr.min(amountAboveFieldCapacity,self.potentialCapillaryRiseAmountNotChecked)
+    return self.potentialCapillaryRiseAmount
+
     
 
 

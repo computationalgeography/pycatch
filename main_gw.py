@@ -197,19 +197,18 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # to undersaturation of the soil layer, so potentialPercolation needs to check for this
     potentialPercolation = self.d_subsurfaceWaterOneLayer.potentialPercolation()
 
-    #self.d_groundWaterLayer.updateGroundWaterDepthBelowSoil()
+    # potential capillary rise from groundwater to soil layer, this is what the groundwater layer can give independent
+    # of the soil layer status regarding storage status, again, it will not lead to undersaturation of the groundwater
+    # layer, so potentialCapillaryRise needs to check for this
+    unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer = \
+                            self.d_subsurfaceWaterOneLayer.unsaturatedConductivity()
+    potentialCapillaryRiseAmount = self.d_groundWaterLayer.getPotentialCapillaryRiseAmount( \
+                             unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer)
 
     # temporary to get it running
     self.upwardSeepageFluxFromGroundWater = pcr.scalar(0)
+    tmp = self.d_groundWaterLayer.addWater(0.001)
 
-#    # potential capillary rise from groundwater to soil layer, this is what the groundwater layer can give independent
-#    # of the soil layer status regarding storage status, again, it will not lead to undersaturation of the groundwater
-#    # layer, so potentialCapillaryRise needs to check for this
-#    unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer = \
-#                            self.d_subsurfaceWaterOneLayer.unsaturatedConductivity()
-
-#    potentialCapillaryRise = self.d_groundWaterLayer.potentialCapillaryRise( \
-#                             unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer)
 #
 #    # percolation or capillary rise, depending on the soil moisture status of the two layers, water goes down
 #    # or up, not both
@@ -287,7 +286,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
       regolithThicknessHomogeneous = generalfunctions.areauniformBounds(
                                   1.0, 3.5, cfg.areas, pcr.scalar(cfg.regolithThicknessHomogeneousValue), cfg.createRealizations)
       groundWaterLayerThicknessHomogeneous = generalfunctions.areauniformBounds(
-                                  1.0, 3.5, cfg.areas, pcr.scalar(cfg.groundwaterLayerThicknessHomogeneousValue), cfg.createRealizations)
+                               1.0, 3.5, cfg.areas, pcr.scalar(cfg.groundWaterLayerThicknessHomogeneousValue), cfg.createRealizations)
       saturatedConductivityMetrePerDay = generalfunctions.mapuniformBounds(
                                   25.0, 40.0, pcr.scalar(cfg.saturatedConductivityMetrePerDayValue), cfg.createRealizations)
       multiplierMaxStomatalConductance = generalfunctions.mapuniformBounds(
