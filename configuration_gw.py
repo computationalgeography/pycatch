@@ -134,19 +134,26 @@ if mapsAsInput:
   soilPorosityFractionValue = str(pathlib.Path(inputFolder, "mergePorosityFractionFS.map"))
 
   # regolith geometry
-  regolithThicknessHomogeneousValue = 0.5
+  regolithThicknessHomogeneousValue = 1.0
 
   # groundwater layer geometry
-  groundWaterLayerThicknessHomogeneousValue = 10.0
+  groundWaterLayerThicknessHomogeneousValue = 5.0
+  #groundWaterLayerThicknessHomogeneousValue = 0.01
 
   # location of the stream, used to adjust regolith thickness there
   streamValue = str(pathlib.Path(inputFolder, "mergeStream.map"))
 
   # subsurface water 
-  saturatedConductivityMetrePerDayValue = 37.0
-  limitingPointFractionValue = str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map"))
-  mergeWiltingPointFractionFSValue = str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map"))
-  fieldCapacityFractionValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
+  #saturatedConductivityMetrePerDayValue = 37.0
+  #limitingPointFractionValue = str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map"))
+  #mergeWiltingPointFractionFSValue = str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map"))
+  #fieldCapacityFractionValue = str(pathlib.Path(inputFolder, "mergeFieldCapacityFractionFS.map"))
+  #saturatedConductivityMetrePerDayValue = 0.008    # sand 8, silty sand 1, silt 0.008, clay much lower
+  #saturatedConductivityMetrePerDayValue = 40.0
+  saturatedConductivityMetrePerDayValue = 1.0
+  limitingPointFractionValue = 0.2
+  mergeWiltingPointFractionFSValue = 0.1
+  fieldCapacityFractionValue = 0.4
 
   # evapotranspiration
   # penman
@@ -179,10 +186,11 @@ else:
   soilPorosityFractionValue = 0.5
 
   # regolith geometry
-  regolithThicknessHomogeneousValue = 0.5
+  regolithThicknessHomogeneousValue = 1.0
 
   # groundwater layer geometry
-  groundWaterLayerThicknessHomogeneousValue = 10.0
+  groundWaterLayerThicknessHomogeneousValue = 5.0
+  #groundWaterLayerThicknessHomogeneousValue = 0.01
 
   # subsurface water 
   #saturatedConductivityMetrePerDayValue = 37.0
@@ -190,7 +198,9 @@ else:
   #mergeWiltingPointFractionFSValue = 0.1
   #fieldCapacityFractionValue = 0.327306
   # simple values for debugging
-  saturatedConductivityMetrePerDayValue = 40.0
+  #saturatedConductivityMetrePerDayValue = 0.008
+  #saturatedConductivityMetrePerDayValue = 40.0  
+  saturatedConductivityMetrePerDayValue = 1.0    # gravel high, sand 8, silty sand 1, silt 0.008, clay much lower
   limitingPointFractionValue = 0.2
   mergeWiltingPointFractionFSValue = 0.1
   fieldCapacityFractionValue = 0.4
@@ -234,8 +244,8 @@ if setOfVariablesToReport == 'full':
   infiltration_report_rasters = ["Ii", "Ij", "Is", "Iks"]
   runoff_report_rasters = ["Rq"]
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
-  subsurface_report_rasters = ["Gs", "Go", "Gppa"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
-  subsurface_report_rasters_gw = ["GGs", "GGgwd", "GGpcr", "GGpcrf"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters = ["Gs", "Go", "Gppa", "Gkun"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = ["GGs", "GGgwd", "GGpcr", "GGpcrf", "GGdos", "GGkun"]   # reports of totals (Gxt, Got) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
@@ -246,8 +256,8 @@ elif setOfVariablesToReport == 'filtering':
   runoff_report_rasters = ["Rq"]
   #shading_report_rasters = []
   shading_report_rasters = ["Mfs", "Msc", "Msh"]
-  subsurface_report_rasters = ["Gs", "Gppa", "Gdos"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
-  subsurface_report_rasters_gw = ["GGs", "GGgwd", "GGpcr", "GGpcrf"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters = ["Gs", "Gppa", "Gdos", "Gkun"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
+  subsurface_report_rasters_gw = ["GGs", "GGgwd", "GGpcr", "GGpcrf", "GGdos", "GGkun"]   # reports of totals (accuflux) only make sense if calculateUpstreamTotals is True
   surfacestore_report_rasters = []
   #randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   randomparameters_report_rasters = []

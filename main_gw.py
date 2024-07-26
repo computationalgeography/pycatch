@@ -201,41 +201,41 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # of the soil layer status regarding storage status, again, it will not lead to undersaturation of the groundwater
     # layer, so potentialCapillaryRise needs to check for this
     unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer = \
-                            self.d_subsurfaceWaterOneLayer.unsaturatedConductivity()
+                            self.d_subsurfaceWaterOneLayer.getUnsaturatedConductivity()
     potentialCapillaryRiseAmount = self.d_groundWaterLayer.getPotentialCapillaryRiseAmount( \
                              unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer)
 
-    # temporary to get it running
-    self.upwardSeepageFluxFromGroundWater = pcr.scalar(0)
-    tmp = self.d_groundWaterLayer.addWater(0.001)
+    # percolation or capillary rise, depending on the soil moisture status of the two layers, water goes down
+    # or up, not both
+    saturationDegreeGroundWaterLayer = self.d_groundWaterLayer.updateDegreeOfSaturation()
+    PercolationNoCapillaryRise = saturationDegreeSoilLayer > saturationDegreeGroundWaterLayer
+    self.report(PercolationNoCapillaryRise, 'pncr')
 
-#
-#    # percolation or capillary rise, depending on the soil moisture status of the two layers, water goes down
-#    # or up, not both
-#    saturationDegreeGroundWaterLayer = self.d_groundWaterLayer.saturationdegree()
-#    PercolationNoCapillaryRise = pcr.gt(saturationDegreeSoilLayer,saturationDegreeGroundWaterLayer)
-#
-#    # actual percolation
-#    potentialPercolationIfPercolationOccurs = pcr.ifthenelse(PercolationNoCapillaryRise, potentialPercolation, scalar(0))
-#    actualPercolation = self.d_subsurfaceWaterOneLayer.abstractWater(potentialPercolationIfPercolationOccurs)
-#    # add actual percolation to the groundwater layer up to saturation, what is actually added is returned here 
-#    percolationFluxToGroundWater = self.d_groundWaterLayer.addWater(actualPercolation)
-#    # the groundwater may get saturated due to percolation and this water is considered upward seepage (routed down
-#    # over the land surface, note that this will be very small values
-#    upwardSeepageFluxFromPercolationToGroundwater = actualPercolation - percolationFluxToGroundwater
-#
-#    # actual capillary rise
-#    potentialCapillaryRiseIfNoPercolationOccurs = pcr.ifthenelse( \
-#                              PercolationNoCapillaryRise, scalar(0), potentialCapillaryRise)
-#    actualCapillaryRise = self.d_subsurfaceWaterOneLayer.addWater(potentialCapillaryRiseIfNoPercolationOccurs)
-#    # input and output of function needs to be the same as groundwater conditions have already been checked for
-#    # above
-#    actualCapillaryRise = self.d_groundWaterLayer.abstractWater(actualCapillaryRise)
-#
-#    # upward seepage from groundwater
-#    # needs to be added to the rainfall/throughfall in the next timestep
-#    self.upwardSeepageFluxFromGroundWater = self.d_groundWaterLayer.lateralFlow() + \
-#                                       upwardSeepageFluxFromPercolationToGroundwater
+    # take actual percolation from soil layer
+    potentialPercolationIfPercolationOccurs = pcr.ifthenelse(PercolationNoCapillaryRise, potentialPercolation, pcr.scalar(0))
+    actualPercolation = self.d_subsurfaceWaterOneLayer.abstractWater(potentialPercolationIfPercolationOccurs)
+
+    # add actual percolation to the groundwater layer up to saturation, what is actually added is returned here 
+    percolationFluxToGroundWater = self.d_groundWaterLayer.addWater(actualPercolation)
+
+    # the groundwater may get saturated due to percolation and this water is considered upward seepage (routed down
+    # over the land surface, note that this will be very small values
+    upwardSeepageFluxFromPercolationToGroundwater = actualPercolation - percolationFluxToGroundWater
+
+    # actual capillary rise
+    potentialCapillaryRiseIfNoPercolationOccurs = pcr.ifthenelse( \
+                              PercolationNoCapillaryRise, pcr.scalar(0), potentialCapillaryRiseAmount)
+    actualCapillaryRise = self.d_subsurfaceWaterOneLayer.addWater(potentialCapillaryRiseIfNoPercolationOccurs)
+    # input and output of function needs to be the same as groundwater conditions have already been checked for
+    # above
+    actualCapillaryRiseSecond = self.d_groundWaterLayer.abstractWater(actualCapillaryRise)
+    self.report(actualPercolation-actualCapillaryRiseSecond,'vf')
+
+    # upward seepage from groundwater
+    # needs to be added to the rainfall/throughfall in the next timestep
+    self.upwardSeepageFluxFromGroundWater = self.d_groundWaterLayer.lateralFlow() + \
+                                       upwardSeepageFluxFromPercolationToGroundwater
+    self.report(self.upwardSeepageFluxFromGroundWater,'usffg')
 
     ## End Ground water layer ##
 
@@ -434,6 +434,9 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # thickness
 
     groundWaterLayerThickness = pcr.ifthenelse(stream, 0.2, groundWaterLayerThicknessHomogeneous)
+
+    initialSoilMoistureFraction = fieldCapacityFraction
+
 
     self.d_groundWaterLayer = subsurfacewateronelayer_gw.SubsurfaceWaterOneLayer(
                                    self.ldd,

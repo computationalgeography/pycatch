@@ -83,6 +83,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.groundWaterDepthBelowSoil = pcr.scalar(0)
     self.potentialCapillaryRiseAmount = pcr.scalar(0)
     self.potentialCapillaryRiseNotCheckedFlux = pcr.scalar(0)
+    self.unsaturatedConductivity = pcr.scalar(0)
 
     ####
     # real inits
@@ -135,7 +136,8 @@ class SubsurfaceWaterOneLayer(component.Component):
                                 self.fileNamePrefix + 'Gdos': self.degreeOfSaturation,
                                 self.fileNamePrefix + 'Ggwd': self.groundWaterDepthBelowSoil,
                                 self.fileNamePrefix + 'Gpcr': self.potentialCapillaryRiseAmount,
-                                self.fileNamePrefix + 'Gpcrf': self.potentialCapillaryRiseNotCheckedFlux
+                                self.fileNamePrefix + 'Gpcrf': self.potentialCapillaryRiseNotCheckedFlux,
+                                self.fileNamePrefix + 'Gkun': self.unsaturatedConductivity
                            }
     # reports
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
@@ -369,18 +371,25 @@ class SubsurfaceWaterOneLayer(component.Component):
   def updateDegreeOfSaturation(self):
     # degree of saturation calculated following van Beek 2009, used in
     # potentialPercolation method
-    degreeOfSaturationTmp = pcr.max(0.0,(self.soilMoistureThick-self.fieldCapacityThick)) / \
-                            (self.soilPorosityThick-self.fieldCapacityThick)
+    #degreeOfSaturationTmp = pcr.max(0.0,(self.soilMoistureThick-self.fieldCapacityThick)) / \
+    #                        (self.soilPorosityThick-self.fieldCapacityThick)
+    # idem, but using clapp 1979, which is somewhat different
+    degreeOfSaturationTmp = self.soilMoistureThick/self.soilPorosityThick
     self.degreeOfSaturation = pcr.max(pcr.min(degreeOfSaturationTmp,pcr.scalar(1.0)), 0.0)
+    return self.degreeOfSaturation
 
-  def unsaturatedConductivity(self):
+  def getUnsaturatedConductivity(self):
     # unsaturated conductivity of the layer, this is the same as the potential percolation
-    # following Beek 2009
-    self.updateDegreeOfSaturation()
+    # following Beek 2009, see also clapp 1979
+    # we take b = 7, which is mean across textures, for sophistication use Clapp table 2
+    # and adjust according to texture
+    tmp  = self.updateDegreeOfSaturation()
     saturatedConductivityMetrePerHour = self.saturatedConductivityMetrePerDay / 24.0
-    unsaturatedConductivity = saturatedConductivityMetrePerHour * \
-                              self.degreeOfSaturation
-    return unsaturatedConductivity, self.degreeOfSaturation
+    #unsaturatedConductivity = saturatedConductivityMetrePerHour * \
+    #                          self.degreeOfSaturation
+    b = pcr.scalar(7.0)
+    self.unsaturatedConductivity = (self.degreeOfSaturation ** (2.0 * b + 3.0)) * saturatedConductivityMetrePerHour
+    return self.unsaturatedConductivity, self.degreeOfSaturation
 
   def potentialPercolation(self):
     # calculates the percolation following van Beek 2009; potential percolation is calculated
@@ -390,7 +399,7 @@ class SubsurfaceWaterOneLayer(component.Component):
     # as percolation is limited by field capacity it will basically never get lower than field
     # capacity due to percolation
     # residual value in van Beek 2009 is moisture content at field capacity (assumed)
-    potentialPercolationNotLimitedByMoistureContentFlux,tmp = self.unsaturatedConductivity()
+    potentialPercolationNotLimitedByMoistureContentFlux,tmp = self.getUnsaturatedConductivity()
     potentialPercolationNotLimitedByMoistureContentAmount = self.fluxToAmount( \
                                              potentialPercolationNotLimitedByMoistureContentFlux)
     self.calculateMaximumAbstractionThickUpToFieldCapacity()
@@ -411,18 +420,19 @@ class SubsurfaceWaterOneLayer(component.Component):
     # depth (m) of groundwater below which no cap. rise occurs anymore
     # Takes into account water that can be substracted from groundwater (up to field capacity)
     # it is unclear why there is 0.5 in eq 9, tuned?
+    # unlike van Beek 2009, the unsat conductivity of the groundwater layer is used for the conductivity
     maxDepth = pcr.scalar(5.0)
     self.updateGroundWaterDepthBelowTopOfLayer()
-    saturatedConductivityMetrePerHour = self.saturatedConductivityMetrePerDay / 24.0
+    # unsaturated conductivity of current layer (groundwater)
+    tmp = self.getUnsaturatedConductivity()
     # first term in eq 9
     # formulation following van Beek eq 9 (causes cap rise to go up if soil moisture goes up due to increase in unsat
     # conductivity of the soil layer
     #conductivityMetrePerHour = pcr.sqrt(saturatedConductivityMetrePerHour * unsaturatedConductivitySoilLayerMetrePerHour)
     # formulation by me, most of the cap rise is in the groundwater so not strange to use the sat of this layer
-    conductivityMetrePerHour = saturatedConductivityMetrePerHour
     oneMinusSaturationDegreeSoil = pcr.max(pcr.min(1.0 - saturationDegreeSoilLayer,1.0),0.0)
     groundwaterDepthProportion = pcr.max(maxDepth - self.groundWaterDepthBelowSoil,0.0)/maxDepth
-    self.potentialCapillaryRiseNotCheckedFlux = conductivityMetrePerHour * oneMinusSaturationDegreeSoil * groundwaterDepthProportion
+    self.potentialCapillaryRiseNotCheckedFlux = pcr.scalar(self.unsaturatedConductivity) * oneMinusSaturationDegreeSoil * groundwaterDepthProportion
 
   def getPotentialCapillaryRiseAmount(self,unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
     # Takes into account water that can be substracted from groundwater (up to field capacity)
@@ -432,7 +442,6 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.potentialCapillaryRiseAmount = pcr.min(amountAboveFieldCapacity,self.potentialCapillaryRiseAmountNotChecked)
     return self.potentialCapillaryRiseAmount
 
-    
 
 
 #  def report(self, sample, timestep, nrOfTimeSteps):
