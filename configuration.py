@@ -63,8 +63,8 @@ readDistributionOfParametersFromDisk = False
 #setOfVariablesToReport = 'full'
 setOfVariablesToReport = 'filtering'
 
-with_shading = True
-#with_shading = False
+#with_shading = True
+with_shading = False
 
 if with_shading is False:
   print("TEMPORARY SHADING SETTING IN CONFIGURATION.py")

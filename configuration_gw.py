@@ -6,6 +6,7 @@ numberOfTimeSteps = 10968
 # folder with input files (maps, timeseries)
 #inputFolder = "inputs"
 inputFolder = "../switzerland/40m_small_area"
+#inputFolder = "../switzerland/40m"
 
 # select maps as input parameters and initial values or uniform values over the area
 mapsAsInput = False
@@ -249,6 +250,7 @@ if setOfVariablesToReport == 'full':
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
+  soilwashMMF_report_rasters = ["Wde", "Wdm", "Wfl", "Wdt", "Wtc"]
 elif setOfVariablesToReport == 'filtering':
   interception_report_rasters = []  # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   evapotrans_report_rasters = []
@@ -263,3 +265,4 @@ elif setOfVariablesToReport == 'filtering':
   randomparameters_report_rasters = []
   #exchange_report_rasters = ["Xrc", "Xra"]
   exchange_report_rasters = []
+  soilwashMMF_report_rasters = ["Wde", "Wdm", "Wfl", "Wdt", "Wtc"]

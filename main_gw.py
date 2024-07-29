@@ -25,6 +25,7 @@ import runoffaccuthreshold
 import shading
 import generalfunctions
 import randomparameters
+import soilwashMMF
 
 # from this folder
 import exchangevariables
@@ -70,6 +71,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     # budgets
     self.d_exchangevariables.cumulativePrecipitation = pcr.scalar(0)
+
+    # initial values 
+    self.netDepositionCum = pcr.scalar(0)
+    self.netDepositionMetreCum = pcr.scalar(0)
+    self.netTotalDetachKgPerCell = pcr.scalar(0)
 
   def dynamic(self):
     import generalfunctions
@@ -241,6 +247,20 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     # upward seepage from subsurfacestore
     self.d_exchangevariables.upwardSeepageFlux = self.d_subsurfaceWaterOneLayer.lateralFlow()
+
+    # wash
+    # surface wash 
+    self.runoffMetreWaterDepthPerHour=runoffCubicMetresPerHour/pcr.cellarea()
+    # small values added as it cannot handle zero's
+    netDeposition, self.netDepositionMetre, lateralFluxKg, totalDetachKgPerCell, transportCapacityKgPerCell= \
+                                            self.d_soilwashMMF.calculateWash( \
+                                            self.runoffMetreWaterDepthPerHour+0.000000001,rainfallFlux+0.000000001,throughfallFlux+0.000000001)
+    self.netDepositionCum = self.netDepositionCum + netDeposition
+    self.report(self.netDepositionCum, "nd")
+    self.netDepositionMetreCum = self.netDepositionMetreCum + self.netDepositionMetre
+    self.report(self.netDepositionMetreCum, "ndm")
+    self.netTotalDetachKgPerCell = self.netTotalDetachKgPerCell + totalDetachKgPerCell
+    self.report(self.netTotalDetachKgPerCell, "ntd")
 
     # reports
     self.reportComponentsDynamic()
@@ -465,6 +485,40 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                cfg.timeStepsToReportRqs,
                                cfg.runoff_report_rasters)
 
+
+    ##############
+    # soilwash   #
+    ##############
+
+    plantHeightMetres=5.0
+    stoneCoverFraction=0.1
+    vegetationCoverOfSoilFraction=0.1
+    manningsN=0.03 # 'original'
+
+    # standard erosion scenario
+    detachabilityOfSoilRaindrops=1.6 # 'original'  (used for all scenarios)
+    detachabilityOfSoilRunoff=6.4 #'original'
+
+    ## more erosion scenario
+    #detachabilityOfSoilRaindrops=16
+    #detachabilityOfSoilRunoff=64
+
+    durationOfRainstorm = 1.0
+
+    self.d_soilwashMMF=soilwashMMF.SoilWashMMF( \
+                                              self.ldd,
+                                              self.dem,
+                                              durationOfRainstorm,
+                                              plantHeightMetres,
+                                              detachabilityOfSoilRaindrops,
+                                              stoneCoverFraction, 
+                                              detachabilityOfSoilRunoff,
+                                              vegetationCoverOfSoilFraction,
+                                              manningsN,
+                                              soilPorosityFraction,
+                                              cfg.timeStepsToReportSome,
+                                              cfg.soilwashMMF_report_rasters)
+
     ######################
     # evapotranspiration #
     ######################
@@ -504,7 +558,8 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                  self.d_evapotranspirationPenman, \
                  self.d_runoffAccuthreshold, \
                  self.d_subsurfaceWaterOneLayer, \
-                 self.d_groundWaterLayer
+                 self.d_groundWaterLayer, \
+                 self.d_soilwashMMF
                  ]
 
     if cfg.with_shading:

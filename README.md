@@ -57,6 +57,7 @@ To do's PyCatch hourly model
 - Why is Rq max value greater than 100? (on output maps)
 - Ground water
   - Check the ldd's for both soil and ground water layer
+  - Consider using slope in water for lateral flow (for the second layer)
 
 
 Groundwater layer

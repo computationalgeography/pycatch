@@ -102,7 +102,7 @@ class SoilWashMMF(component.Component):
     numberHoursPerYear=365.0*24.0
     leafDrainageEnergyPerHour=leafDrainageEnergy*(numberHoursRainPerYear/numberHoursPerYear)
     leafDrainageEnergy=leafDrainageEnergyPerHour*self.rainstormDuration
-    report(leafDrainageEnergy,'lde.map')
+    #report(leafDrainageEnergy,'lde.map')
     return leafDrainageEnergy
 
   def totalRainfallEnergy(self,erosiveRainfallIntensityFlux,directRainFlux):
@@ -180,6 +180,7 @@ class SoilWashMMF(component.Component):
     raindropDetachmentKgPerSquareMetre = self.detachmentSoilByRaindrops(erosiveRainfallIntensityFlux,directRainFlux)
 
     self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre+raindropDetachmentKgPerSquareMetre)
+    self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre)
 
     self.transportCapacityKgPerCell = self.transportCapacity(runoffMetreWaterDepthPerHour*cellarea())
 

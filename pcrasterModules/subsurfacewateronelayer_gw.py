@@ -425,14 +425,15 @@ class SubsurfaceWaterOneLayer(component.Component):
     self.updateGroundWaterDepthBelowTopOfLayer()
     # unsaturated conductivity of current layer (groundwater)
     tmp = self.getUnsaturatedConductivity()
-    # first term in eq 9
-    # formulation following van Beek eq 9 (causes cap rise to go up if soil moisture goes up due to increase in unsat
-    # conductivity of the soil layer
-    #conductivityMetrePerHour = pcr.sqrt(saturatedConductivityMetrePerHour * unsaturatedConductivitySoilLayerMetrePerHour)
-    # formulation by me, most of the cap rise is in the groundwater so not strange to use the sat of this layer
     oneMinusSaturationDegreeSoil = pcr.max(pcr.min(1.0 - saturationDegreeSoilLayer,1.0),0.0)
     groundwaterDepthProportion = pcr.max(maxDepth - self.groundWaterDepthBelowSoil,0.0)/maxDepth
-    self.potentialCapillaryRiseNotCheckedFlux = pcr.scalar(self.unsaturatedConductivity) * oneMinusSaturationDegreeSoil * groundwaterDepthProportion
+    ## formulation by me, most of the cap rise is in the groundwater so not strange to use the unsat of this layer
+    #self.potentialCapillaryRiseNotCheckedFlux = pcr.scalar(self.unsaturatedConductivity) * oneMinusSaturationDegreeSoil * groundwaterDepthProportion
+    # formulation following van Beek eq 9 (causes cap rise to go up if soil moisture goes up due to increase in unsat
+    # but using unsat conductivity of groundwater layer
+    # conductivity of the soil layer
+    conductivityMetrePerHour = pcr.sqrt(self.unsaturatedConductivity * unsaturatedConductivitySoilLayerMetrePerHour)
+    self.potentialCapillaryRiseNotCheckedFlux = conductivityMetrePerHour * oneMinusSaturationDegreeSoil * groundwaterDepthProportion
 
   def getPotentialCapillaryRiseAmount(self,unsaturatedConductivitySoilLayerMetrePerHour, saturationDegreeSoilLayer):
     # Takes into account water that can be substracted from groundwater (up to field capacity)

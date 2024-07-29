@@ -110,7 +110,6 @@ elif setOfVariablesToReport == 'none':
   rainfalleventsfromgammadistribution_report_rasters = []
   soilwashMMF_report_rasters = []
   exchange_report_rasters = []
-  soilwashMMF_report_rasters = []
   regolith_report_rasters = []
   bedrockweathering_report_rasters = []
   evapotranspirationsimple_report_rasters = []
