@@ -25,7 +25,7 @@ import runoffaccuthreshold
 import shading
 import generalfunctions
 import randomparameters
-import soilwashMMF
+import soilwashMMF_gw
 
 # from this folder
 import exchangevariables
@@ -256,11 +256,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
                                             self.d_soilwashMMF.calculateWash( \
                                             self.runoffMetreWaterDepthPerHour+0.000000001,rainfallFlux+0.000000001,throughfallFlux+0.000000001)
     self.netDepositionCum = self.netDepositionCum + netDeposition
-    self.report(self.netDepositionCum, "nd")
+    #self.report(self.netDepositionCum, "nd")
     self.netDepositionMetreCum = self.netDepositionMetreCum + self.netDepositionMetre
-    self.report(self.netDepositionMetreCum, "ndm")
+    #self.report(self.netDepositionMetreCum, "ndm")
     self.netTotalDetachKgPerCell = self.netTotalDetachKgPerCell + totalDetachKgPerCell
-    self.report(self.netTotalDetachKgPerCell, "ntd")
+    #self.report(self.netTotalDetachKgPerCell, "ntd")
 
     # reports
     self.reportComponentsDynamic()

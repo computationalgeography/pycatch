@@ -54,10 +54,16 @@ To do's PyCatch hourly model
 - Use correct geographical coordinates
 - Check time alignment (precip)
 - Consider using solar inclination and topography (it now only uses shading effect)
-- Why is Rq max value greater than 100? (on output maps)
+- Why is Rq max value greater than 100? (on output maps) This is the same in original model (more or less)
 - Ground water
   - Check the ldd's for both soil and ground water layer
   - Consider using slope in water for lateral flow (for the second layer)
+  - Check whether model with 1 cm groundwater gives same output as original model
+- Erosion is too high. This is partly due to too high rain drop impact, without raindrop impact however (only wash detachment)
+  it is still too high. Transport capacity also may be too high. Need to check parameters etc. Spatial pattern however makes sense.
+  Or consider calling the erosion component once in the so many days
+
+
 
 
 Groundwater layer
