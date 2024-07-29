@@ -180,7 +180,6 @@ class SoilWashMMF(component.Component):
     raindropDetachmentKgPerSquareMetre = self.detachmentSoilByRaindrops(erosiveRainfallIntensityFlux,directRainFlux)
 
     self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre+raindropDetachmentKgPerSquareMetre)
-    self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre)
 
     self.transportCapacityKgPerCell = self.transportCapacity(runoffMetreWaterDepthPerHour*cellarea())
 

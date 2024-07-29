@@ -46,11 +46,14 @@ class SoilWashMMF(component.Component):
     self.totalDetachKgPerCell = scalar(0)
     self.transportCapacityKgPerCell = scalar(0)
     self.specificWeightRockKgPerCubicMetre=2650.0
+    self.detachmentByRaindropsKgPerSquareMetre=scalar(0)
+    self.flowVelocityMetrePerSecond=scalar(0)
+    self.netDepositionMetreCum=scalar(0)
+
     # conversion kg rock to height soil
     volumeRockMaterialCubicMetresOfOneKiloRock=1.0/self.specificWeightRockKgPerCubicMetre
     volumeSoilOfOneKiloRock=volumeRockMaterialCubicMetresOfOneKiloRock/(1.0-self.soilPorosity)
     self.heightSoilOfOneKiloRock=volumeSoilOfOneKiloRock/cellarea()
-    report(self.heightSoilOfOneKiloRock,'hsook')
 
   def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
@@ -61,7 +64,9 @@ class SoilWashMMF(component.Component):
                            'Wtc': self.transportCapacityKgPerCell,
                            'Wtv': self.transportCapacityVolumeFraction,
                            'Wsp': self.streamPowerCmPerSec,
-                           'Wac': self.accuDeposition
+                           'Wac': self.accuDeposition,
+                           'Wdr': self.detachmentByRaindropsKgPerSquareMetre,
+                           'Wdmc': self.netDepositionMetreCum
                           }
     self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
     self.reportMaps(sample, timestep)
@@ -116,9 +121,9 @@ class SoilWashMMF(component.Component):
     assumes one grain size
     '''
     totalRainfallEnergy=self.totalRainfallEnergy(erosiveRainfallIntensityFlux,directRainFlux)
-    detachmentByRaindropsKgPerSquareMetre=self.detachabilityOfSoilRaindrops * (1-self.stoneCoverFraction) * \
+    self.detachmentByRaindropsKgPerSquareMetre=self.detachabilityOfSoilRaindrops * (1-self.stoneCoverFraction) * \
                                           totalRainfallEnergy * 0.001
-    return detachmentByRaindropsKgPerSquareMetre
+    return self.detachmentByRaindropsKgPerSquareMetre
 
 
   def detachmentSoilByRunoff(self,runoffMetreWaterDepthPerHour):
@@ -136,9 +141,9 @@ class SoilWashMMF(component.Component):
     This seems a combination of manning and A=alpha Q ^ Beta
     '''
     runoffCubicMetresPerSecond=runoffCubicMetresPerHour/(60.0*60.0)
-    flowVelocityMetrePerSecond=( (runoffCubicMetresPerSecond**(2.0/5.0)) * (self.slope ** (3.0/10.0)) ) / \
+    self.flowVelocityMetrePerSecond=( (runoffCubicMetresPerSecond**(2.0/5.0)) * (self.slope ** (3.0/10.0)) ) / \
                              ( (self.manningsN ** (3.0/5.0)) * (self.widthOfFlow ** (2.0 / 5.0)) )
-    return flowVelocityMetrePerSecond
+    return self.flowVelocityMetrePerSecond
    
   def transportCapacity(self,runoffCubicMetresPerHour): 
     '''
@@ -180,7 +185,6 @@ class SoilWashMMF(component.Component):
     raindropDetachmentKgPerSquareMetre = self.detachmentSoilByRaindrops(erosiveRainfallIntensityFlux,directRainFlux)
 
     self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre+raindropDetachmentKgPerSquareMetre)
-    self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre)
 
     self.transportCapacityKgPerCell = self.transportCapacity(runoffMetreWaterDepthPerHour*cellarea())
 
@@ -189,6 +193,7 @@ class SoilWashMMF(component.Component):
                                 self.ldd,self.totalDetachKgPerCell,self.transportCapacityKgPerCell)
     self.netDepositionKgPerCell=self.accuDeposition-self.totalDetachKgPerCell
     self.netDepositionMetre=self.kgToMetreHeight(self.netDepositionKgPerCell)
+    self.netDepositionMetreCum=self.netDepositionMetre + self.netDepositionMetreCum
     return self.netDepositionKgPerCell, self.netDepositionMetre, self.lateralFluxKg, \
            self.totalDetachKgPerCell, self.transportCapacityKgPerCell
 
@@ -202,30 +207,42 @@ class SoilWashMMF(component.Component):
            self.totalDetachKgPerCell, self.transportCapacityKgPerCell
 
 ## test
-#dem='mdtpaz4.map'
+#dem='../../switzerland/40m_small_area/mergeDem.map'
 #ldd=lddcreate(dem,1e31,1e31,1e31,1e31)
-#report(ldd,'ldd.map')
-#rainstormDuration=1.0
 #plantHeightMetres=5.0
-#detachabilityOfSoilRaindrops=0.4
-#detachabilityOfSoilRunoff=1.6
 #stoneCoverFraction=0.1
-#vegetationCoverOfSoilFraction=0.1
-#erosiveRainfallIntensityFlux=0.001    # just the amount of rainfall given as a flux
-#directRainFlux=0.0005          # 1-gapfraction value, should be smaller than erosiveRainfallIntensityFlux
-#runoffMetreWaterDepthPerHour=accuflux(ldd,erosiveRainfallIntensityFlux/2.0)
+#vegetationCoverOfSoilFraction=0.1  
+#manningsN=0.03 # 'original'
+#detachabilityOfSoilRaindrops=1.6 # 'original'  (used for all scenarios)
+#detachabilityOfSoilRunoff=6.4 #'original'
+#durationOfRainstorm = 1.0
+#soilPorosityFraction = 0.4
+#   
+#d_soilwashMMF=SoilWashMMF( \
+#                                              ldd,
+#                                              dem,
+#                                              durationOfRainstorm,
+#                                              plantHeightMetres,
+#                                              detachabilityOfSoilRaindrops,
+#                                              stoneCoverFraction, 
+#                                              detachabilityOfSoilRunoff,
+#                                              vegetationCoverOfSoilFraction,
+#                                              manningsN,
+#                                              soilPorosityFraction,
+#                                              'tmp',
+#                                              'tmp')
 #
-#d_soilwashmmf = SoilWashMMF(ldd,dem,rainstormDuration,plantHeightMetres,detachabilityOfSoilRaindrops,stoneCoverFraction, \
-#                            detachabilityOfSoilRunoff,vegetationCoverOfSoilFraction, 0.03)
+#rainfallFlux=0.005    # just the amount of rainfall given as a flux
+#throughfallFlux=0.002
+#runoffMetreWaterDepthPerHour=accuflux(ldd,rainfallFlux)
 #
-##detachRunoffTonPerHectare=(detachRunoff*(100*100))/1000
-##report(detachRunoff,'droton.map')
+#netDeposition, netDepositionMetre, lateralFluxKg, totalDetachKgPerCell, transportCapacityKgPerCell= \
+#                                            d_soilwashMMF.calculateWash( \
+#                                            runoffMetreWaterDepthPerHour+0.000000001,rainfallFlux+0.000000001,throughfallFlux+0.000000001)
 #
-#netDepKg,latFluxKg,totDetachKg, transCapKg=d_soilwashmmf.calculateWash(runoffMetreWaterDepthPerHour,erosiveRainfallIntensityFlux,directRainFlux)
-#
-#report(netDepKg,'nd.map')
-#report(latFluxKg,'lat.map')
-#report(totDetachKg,'totdetach.map')
-#report(transCapKg,'transcapkg.map')
-#
-#report(((netDepKg/2650)*(1.0/0.6))/cellarea(),'ndmetre.map')
+#report(netDeposition,'testnd')
+#report(netDepositionMetre,'testndm')
+#report(d_soilwashMMF.detachmentByRaindropsKgPerSquareMetre*cellarea(),'testdb') # raindrop detachment
+#report(totalDetachKgPerCell,'testtdr')
+#report(transportCapacityKgPerCell,'testtc')
+#report(d_soilwashMMF.flowVelocityMetrePerSecond,'testfv')

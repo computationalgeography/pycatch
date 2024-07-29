@@ -250,7 +250,7 @@ if setOfVariablesToReport == 'full':
   surfacestore_report_rasters = ["Ss", "Sc"]
   randomparameters_report_rasters = ["RPic", "RPks", "RPrt", "RPsc", "RPmm"]
   exchange_report_rasters = ["Xrc"]
-  soilwashMMF_report_rasters = ["Wde", "Wdm", "Wfl", "Wdt", "Wtc"]
+  soilwashMMF_report_rasters = ["Wde", "Wdm", "Wfl", "Wdt", "Wtc", "Wdr", "Wdmc"]
 elif setOfVariablesToReport == 'filtering':
   interception_report_rasters = []  # reports of totals (Vot) only make sense if calculateUpstreamTotals is True
   evapotrans_report_rasters = []
@@ -265,4 +265,4 @@ elif setOfVariablesToReport == 'filtering':
   randomparameters_report_rasters = []
   #exchange_report_rasters = ["Xrc", "Xra"]
   exchange_report_rasters = []
-  soilwashMMF_report_rasters = ["Wde", "Wdm", "Wfl", "Wdt", "Wtc"]
+  soilwashMMF_report_rasters = ["Wde", "Wdm", "Wfl", "Wdt", "Wtc", "Wdr", "Wdmc"]

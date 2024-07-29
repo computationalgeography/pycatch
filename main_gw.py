@@ -72,10 +72,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # budgets
     self.d_exchangevariables.cumulativePrecipitation = pcr.scalar(0)
 
-    # initial values 
-    self.netDepositionCum = pcr.scalar(0)
-    self.netDepositionMetreCum = pcr.scalar(0)
-    self.netTotalDetachKgPerCell = pcr.scalar(0)
 
   def dynamic(self):
     import generalfunctions
@@ -215,7 +211,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # or up, not both
     saturationDegreeGroundWaterLayer = self.d_groundWaterLayer.updateDegreeOfSaturation()
     PercolationNoCapillaryRise = saturationDegreeSoilLayer > saturationDegreeGroundWaterLayer
-    self.report(PercolationNoCapillaryRise, 'pncr')
 
     # take actual percolation from soil layer
     potentialPercolationIfPercolationOccurs = pcr.ifthenelse(PercolationNoCapillaryRise, potentialPercolation, pcr.scalar(0))
@@ -235,13 +230,11 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     # input and output of function needs to be the same as groundwater conditions have already been checked for
     # above
     actualCapillaryRiseSecond = self.d_groundWaterLayer.abstractWater(actualCapillaryRise)
-    self.report(actualPercolation-actualCapillaryRiseSecond,'vf')
 
     # upward seepage from groundwater
     # needs to be added to the rainfall/throughfall in the next timestep
     self.upwardSeepageFluxFromGroundWater = self.d_groundWaterLayer.lateralFlow() + \
                                        upwardSeepageFluxFromPercolationToGroundwater
-    self.report(self.upwardSeepageFluxFromGroundWater,'usffg')
 
     ## End Ground water layer ##
 
@@ -255,12 +248,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     netDeposition, self.netDepositionMetre, lateralFluxKg, totalDetachKgPerCell, transportCapacityKgPerCell= \
                                             self.d_soilwashMMF.calculateWash( \
                                             self.runoffMetreWaterDepthPerHour+0.000000001,rainfallFlux+0.000000001,throughfallFlux+0.000000001)
-    self.netDepositionCum = self.netDepositionCum + netDeposition
-    #self.report(self.netDepositionCum, "nd")
-    self.netDepositionMetreCum = self.netDepositionMetreCum + self.netDepositionMetre
-    #self.report(self.netDepositionMetreCum, "ndm")
-    self.netTotalDetachKgPerCell = self.netTotalDetachKgPerCell + totalDetachKgPerCell
-    #self.report(self.netTotalDetachKgPerCell, "ntd")
 
     # reports
     self.reportComponentsDynamic()
@@ -505,7 +492,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
     durationOfRainstorm = 1.0
 
-    self.d_soilwashMMF=soilwashMMF.SoilWashMMF( \
+    self.d_soilwashMMF=soilwashMMF_gw.SoilWashMMF( \
                                               self.ldd,
                                               self.dem,
                                               durationOfRainstorm,
