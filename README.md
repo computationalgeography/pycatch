@@ -1,26 +1,28 @@
-# pycatch
+# PyCatch
 
 Copyright Derek Karssenberg & Noemí Lana-Renault Monreal
 
-User manual (draft) 
-===========================
+User manual (draft)
+===================
 
 Copyright of this software: Derek Karssenberg & Noemi Lana-Renault Monreal
-Contact: d.karssenberg@uu.nl or noemi-solange.lana-renault@unirioja.es 
+Contact: d.karssenberg@uu.nl or noemi-solange.lana-renault@unirioja.es
 
 
 Installation
-================
+============
 
 Create a conda environment for PCRaster (for instance by running pcraster_pycatch.yaml)
 
 To run the model with 1 h timestep, run main.py
+
 To run the model with 1 week timestep, run main_weekly.py (this model includes erosion, not documented yet)
+
 To run the model with 10 second timestep, run main_seconds.py
 
 
 Configuring the models
-=============================
+======================
 
 To remove all output, run clean.sh, this does NOT remove inputs, so there is no major risk, but check what is in clean.sh first
 
@@ -28,7 +30,7 @@ Settings are in configuration.py (1 h model) and configuration_weekly.py (1 week
 
 
 Instructions for hybrid modelling
-====================================
+=================================
 
 Use the main_weekly.py model. Settings can be configured in configuration_weekly.py.
 
@@ -49,7 +51,7 @@ grazing pressure for a defined interval. These can be displayed using the PCRast
 
 
 To do's PyCatch hourly model
-=================================
+============================
 
 - Use correct geographical coordinates
 - Check time alignment (precip)
@@ -67,7 +69,7 @@ To do's PyCatch hourly model
 
 
 Groundwater layer
-----------------------
+-----------------
 
 All new things in files with extension _gg
 
@@ -105,7 +107,7 @@ Evapotranspiration:
 
 
 Data needed for PyCatch hourly model
-======================================
+====================================
 
 Refer to paper for background.
 
@@ -114,7 +116,7 @@ If the surface water erosion is added some more inputs are needed (most of them 
 The inputs directory gives these maps for the small catchments in Spain.
 
 Maps needed in addition to DEM:
-----------------------------------
+-------------------------------
 
 - mergeFieldCapacityFractionFS.map    # derive from geology
 - mergeLimitingPointFractionFS.map    # derive from geology
@@ -122,13 +124,13 @@ Maps needed in addition to DEM:
 - mergeStream.map                     # pixels with a stream (can also be calculated from the upstream area)
 - mergeVegAlbedoFS.map                # derive from vegetation classes map or remote sensing products, fixed over time (assumption)
 - mergeVegHeightFS.map                # idem albedo
-- mergeVegLAIFS.map                   # idem albedo 
+- mergeVegLAIFS.map                   # idem albedo
 - mergeVegStomatalFS.map              # idem albedo
 - mergeWiltingPointFractionFS.map     # derive from geology
 
 
 Timeseries needed:
----------------------
+------------------
 
 Could be for each variable a single timeseries for the whole catchmenlt (to start with).
 Consider using https://chelsa-climate.org, currently a state of the art reanalysis data set.
@@ -143,10 +145,10 @@ We need at least 2 years.
 
 
 Output file name conventions
-----------------------------------
+----------------------------
 
 # first letter:
-
+```
 biomass or exchange vars starting with       X (Xst, biomass)
 precipitation files starting with            P
 interception files starting with             V (from vegetation)
@@ -162,9 +164,9 @@ regolith files starting with                 A (Ast, regolith depth (=soil depth
 bedrock weathering files starting with       C
 base level files starting with               L
 creep files starting with                    D
-
+```
 # second letter:
-
+```
 store (s, unit m)
 
 actual flux in (i, unit m/h, for geomorphology m/year)
@@ -179,14 +181,14 @@ another flux (x, unit m/h, for geomorphology m/year)
 lateral flux (q, cubic metre per hour)
 
 two extra letters: other values, eg Ecl, cloud factor
-
+```
 see respective classes for details !!  E.g. actual flux out is not always
 all out fluxes but sometimes only one of two.
 
 
 
 For particle filtering (not yet tested)
--------------------------------------------
+---------------------------------------
 
 To create observed discharge, run createObservedDischarge.sh, it creates maps in the folder 'observations'. This is only required
 for particle filtering
@@ -195,7 +197,7 @@ todo and changes are in changes.txt
 at the bottom of changes is also the names of files used
 
 file name conventions
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 # reports as numpy arrays
 
@@ -213,138 +215,11 @@ RPsc.npy  self.saturatedConductivityMetrePerDay,
 
 
 Removed code
----------------
+------------
 
 Early warning signals
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 Code to calculate statistics in the dynamic section. Removed as it was hard to get GSTAT running.
 Note also that it considerably slows down the model.
-
-#    ############
-#    # statistics
-#    ############
-#    # this needs GSTAT to run (rpy2) but cannot get it working
-#    # SciKit Gstat (another tool may be useful as well) 
-#    boundVector=(30.5,40.5)
-#
-#    # SOIL MOISTURE
-#    self.d_subsurfaceWaterOneLayer.calculateSoilMoistureFraction()
-#    variable=self.d_subsurfaceWaterOneLayer.soilMoistureFraction
-#    variableSampled=ifthen(self.someLocs, variable)
-#
-#    self.historyOfSoilMoistureFraction=generalfunctions.keepHistoryOfMaps(self.historyOfSoilMoistureFraction, \
-#                                                      variableSampled, \
-#                                                      self.durationHistory)
-#    stackOfMapsAsListVariable=list(self.historyOfSoilMoistureFraction)
-#
-#    if calculateStats:
-#      if cfg.variances:
-#        # temporal
-#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-#        numpy.savetxt(generateNameST('sfT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#        # spatial
-#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-#        numpy.savetxt(generateNameST('sfS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#      # mean
-#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-#      meanVariable=areaaverage(variable,self.zoneMap)
-#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'sfA', \
-#                       self.currentSampleNumber(),self.currentTimeStep())
-#
-#    # BIOMASS
-#    variable=self.d_biomassModifiedMay.biomass
-#    variableSampled=ifthen(self.someLocs, variable)
-#
-#    self.historyOfBiomass=generalfunctions.keepHistoryOfMaps(self.historyOfBiomass, \
-#                                                      variableSampled, \
-#                                                      self.durationHistory)
-#    stackOfMapsAsListVariable=list(self.historyOfBiomass)
-#
-#    if calculateStats:
-#      if cfg.variances:
-#        # temporal
-#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-#        numpy.savetxt(generateNameST('bioT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#        # spatial
-#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-#        numpy.savetxt(generateNameST('bioS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#      # mean
-#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-#      meanVariable=areaaverage(variable,self.zoneMap)
-#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'bioA', \
-#                       self.currentSampleNumber(),self.currentTimeStep())
-#
-#    # REGOLITH THICKNESS
-#    variable=self.d_regolithdemandbedrock.regolithThickness
-#    variableSampled=ifthen(self.someLocs, variable)
-#
-#    self.historyOfRegolithThickness=generalfunctions.keepHistoryOfMaps(self.historyOfRegolithThickness, \
-#                                                      variableSampled, \
-#                                                      self.durationHistory)
-#    stackOfMapsAsListVariable=list(self.historyOfRegolithThickness)
-#
-#    if calculateStats:
-#      if cfg.variances:
-#        # temporal
-#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-#        numpy.savetxt(generateNameST('regT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#        # spatial
-#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-#        numpy.savetxt(generateNameST('regS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#      # mean
-#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-#      meanVariable=areaaverage(variable,self.zoneMap)
-#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,meanVariable,'regA', \
-#                       self.currentSampleNumber(),self.currentTimeStep())
-#
-#    # DEM 
-#    variable=self.d_regolithdemandbedrock.dem
-#    variableSampled=ifthen(self.someLocs, variable)
-#
-#    self.historyOfDem=generalfunctions.keepHistoryOfMaps(self.historyOfDem, \
-#                                                      variableSampled, \
-#                                                      self.durationHistory)
-#    stackOfMapsAsListVariable=list(self.historyOfDem)
-#
-#    if calculateStats:
-#      if cfg.variances:
-#        # temporal
-#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-#        numpy.savetxt(generateNameST('demT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#        # spatial
-#        dist,gamma=generalfunctions.experimentalVariogramValues(stackOfMapsAsListVariable,boundVector,1,1,'test',2.0)
-#        numpy.savetxt(generateNameST('demS',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#      # mean
-#      #meanVariable=maptotal(variable)/self.numberOfCellsOnMap
-#      meanVariable=areaaverage(variable,self.zoneMap)
-#      generalfunctions.reportLocationsAsNumpyArray( \
-#                       self.aLocation,meanVariable,'demA',self.currentSampleNumber(),self.currentTimeStep())
-#
-#    # discharge 
-#    downstreamEdge=generalfunctions.edge(self.clone,2,0)
-#    pits=pcrne(pit(self.d_runoffAccuthreshold.ldd),0)
-#    outflowPoints=pcrand(downstreamEdge,pits)
-#    totQ=ifthen(self.clone,maptotal(ifthenelse(outflowPoints,self.d_runoffAccuthreshold.RunoffCubicMetrePerHour,scalar(0))))
-#
-#    variable=totQ
-#    variableSampled=ifthen(self.someLocs, variable)
-#
-#    self.historyOfTotQ=generalfunctions.keepHistoryOfMaps(self.historyOfTotQ, \
-#                                                      variableSampled, \
-#                                                      self.durationHistory)
-#    stackOfMapsAsListVariable=list(self.historyOfTotQ)
-#
-#    if calculateStats:
-#      if cfg.variances:
-#        # temporal
-#        dist,gamma=generalfunctions.experimentalVariogramValuesInTime(stackOfMapsAsListVariable,list(boundVector))
-#        numpy.savetxt(generateNameST('qT',self.currentSampleNumber(),self.currentTimeStep()),numpy.array(gamma))
-#      # mean
-#      generalfunctions.reportLocationsAsNumpyArray(self.aLocation,totQ,'qA',self.currentSampleNumber(),self.currentTimeStep())
-#
-#    # grazing rate
-#    if calculateStats:
-#      generalfunctions.reportLocationsAsNumpyArray( \
-#                       self.aLocation,spatial(scalar(self.grazingRate)),'gA',self.currentSampleNumber(),self.currentTimeStep())
 
