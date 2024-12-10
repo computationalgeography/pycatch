@@ -4,7 +4,7 @@ import pytz
 import math
 import supportingfunctions
 from pcraster.framework import *
-from pcraster import *
+import pcraster as pcr
 from datetime import *
 import datetimePCRasterPython
 import component
@@ -34,7 +34,7 @@ def createListOfSolarCritAngles(step, extendedDem):
         # horizontan, assumed here it returns angle in radians, 1.57 is 90 degrees, position of sun
         # 90 degrees; the cover operation is needed as horizontan does not calculate angles on the edge
         # of the map, it is assumed these can always be in the sun (during the day)
-        solarCritAngle = cover(horizontan(extendedDem, azimuth), 1.57)
+        solarCritAngle = pcr.cover(pcr.horizontan(extendedDem, azimuth), 1.57)
         set.append([azimuth, solarCritAngle])
     return set
 
@@ -44,15 +44,15 @@ class Shading(component.Component):
                 timeStepsToReport, setOfVariablesToReport):
 
         # init for supsend and resume in filtering only
-        self.fractionSolarBeamReceived = scalar(0)
-        self.shaded = scalar(0)
-        self.shadedNoHorizonEffect = scalar(0)
-        self.solarAltitudeDegrees = scalar(0)
-        self.solarAltitudeRadians = scalar(0)
-        self.solarAzimuthDegrees = scalar(0)
-        self.solarAzimuthRadians = scalar(0)
-        self.solarAzimuthRadiansConverted = scalar(0)
-        self.solarCritAngle = scalar(0)
+        self.fractionSolarBeamReceived = pcr.scalar(0)
+        self.shaded = pcr.scalar(0)
+        self.shadedNoHorizonEffect = pcr.scalar(0)
+        self.solarAltitudeDegrees = pcr.scalar(0)
+        self.solarAltitudeRadians = pcr.scalar(0)
+        self.solarAzimuthDegrees = pcr.scalar(0)
+        self.solarAzimuthRadians = pcr.scalar(0)
+        self.solarAzimuthRadiansConverted = pcr.scalar(0)
+        self.solarCritAngle = pcr.scalar(0)
         self.variablesToReport = {}
 
         # real inits
@@ -62,14 +62,14 @@ class Shading(component.Component):
         # createListOfSolarCritAngles), the difference is really small because it only has effect on the
         # shading and this is a very small number of pixels and mostly with a low solar angle already anyway
         self.digitalElevationModel = digitalElevationModel
-        extendedDem = windowaverage(self.digitalElevationModel, celllength() * 3)
-        self.extendedDem = cover(self.digitalElevationModel, extendedDem)
+        extendedDem = pcr.windowaverage(self.digitalElevationModel, pcr.celllength() * 3)
+        self.extendedDem = pcr.cover(self.digitalElevationModel, extendedDem)
         self.latitudeFloatingPoint = latitudeFloatingPoint
         self.longitudeFloatingPoint = longitudeFloatingPoint
         self.timeZone = timeZone
-        self.demSlopeAngle = atan(slope(self.digitalElevationModel))
-        self.aspect = aspect(digitalElevationModel)
-        self.aspectWithFlat = ifthenelse(nodirection(self.aspect), 1.0, self.aspect)
+        self.demSlopeAngle = pcr.atan(pcr.slope(self.digitalElevationModel))
+        self.aspect = pcr.aspect(digitalElevationModel)
+        self.aspectWithFlat = pcr.ifthenelse(pcr.nodirection(self.aspect), 1.0, self.aspect)
         self.reduceRunTime = reduceRunTime
         if self.reduceRunTime:
             self.solarCritAngleList = createListOfSolarCritAngles(0.1, self.extendedDem)
@@ -126,22 +126,22 @@ class Shading(component.Component):
         if self.reduceRunTime:
             self.solarCritAngle = self.horizontanFromList(self.solarAzimuthRadiansConverted)
         else:
-            self.solarCritAngle = horizontan(self.extendedDem, self.solarAzimuthRadiansConverted)
+            self.solarCritAngle = pcr.horizontan(self.extendedDem, self.solarAzimuthRadiansConverted)
 
     def updateShading(self, timeDatetimeFormat):
-        self.shadedNoHorizonEffect = pcrgt(scalar(self.solarCritAngle), math.radians(self.solarAltitudeDegrees))
-        self.shaded = ifthenelse(pcrlt(scalar(self.solarAltitudeDegrees), scalar(0.0)), boolean(1), self.shadedNoHorizonEffect)
+        self.shadedNoHorizonEffect = pcr.pcrgt(pcr.scalar(self.solarCritAngle), math.radians(self.solarAltitudeDegrees))
+        self.shaded = pcr.ifthenelse(pcr.pcrlt(pcr.scalar(self.solarAltitudeDegrees), pcr.scalar(0.0)), pcr.boolean(1), self.shadedNoHorizonEffect)
         return self.solarCritAngle, self.shaded
 
     def updateIncidence(self, timeDatetimeFormat):
         # incidence is the angle between the perpendicular plane of the incoming solar rays and the
         # surface on which they are projected (i.e. the digital elevation model)
         # equation 5 in O. van Dam, thesis, p. 71, note that last term should read cos(X) instead of cos(B)
-        termOne = math.cos(self.solarAltitudeRadians) * sin(self.demSlopeAngle)
+        termOne = math.cos(self.solarAltitudeRadians) * pcr.sin(self.demSlopeAngle)
         a = self.solarAzimuthRadiansConverted
         b = self.aspectWithFlat
-        termTwo = scalar(math.sin(a)) * sin(b) + scalar(math.cos(a)) * cos(b)
-        termThree = math.sin(self.solarAltitudeRadians) * cos(self.demSlopeAngle)
+        termTwo = pcr.scalar(math.sin(a)) * pcr.sin(b) + pcr.scalar(math.cos(a)) * pcr.cos(b)
+        termThree = math.sin(self.solarAltitudeRadians) * pcr.cos(self.demSlopeAngle)
         self.fractionSolarBeamReceived = max(termOne * termTwo + termThree, 0.0)
         fractionSolarBeamReceivedFlatSurfaceAlsoNegative = math.sin(self.solarAltitudeRadians)
         # if statement required because max([a,b]) werkt niet na importeren PCRaster
@@ -155,7 +155,7 @@ class Shading(component.Component):
         self.calculateSolarAngles(timeDatetimeFormat)
         self.solarCritAngle, self.shaded = self.updateShading(timeDatetimeFormat)
         fractionSolarBeamReceivedNoShading, fractionSolarBeamReceivedFlatSurface = self.updateIncidence(timeDatetimeFormat)
-        fractionSolarBeamReceivedWithShading = ifthenelse(self.shaded, scalar(0), fractionSolarBeamReceivedNoShading)
+        fractionSolarBeamReceivedWithShading = pcr.ifthenelse(self.shaded, pcr.scalar(0), fractionSolarBeamReceivedNoShading)
         return fractionSolarBeamReceivedWithShading, fractionSolarBeamReceivedFlatSurface, self.shaded
 
     def printit(self):
@@ -172,10 +172,10 @@ class Shading(component.Component):
 #
 #  def premcloop(self):
 #    self.d_dateTimePCRasterPython=datetimePCRasterPython.DatetimePCRasterPython(datetime(2009,7,27),timedelta(0,0,0,0,0,0.1,0))
-#    self.d_shading=Shading(scalar('mdtpaz4.map'),52.1283333333333 , 5.19861111111111)
+#    self.d_shading=Shading(pcr.scalar('mdtpaz4.map'),52.1283333333333 , 5.19861111111111)
 #
 #  def initial(self):
-#    self.totalFraction=scalar(0)
+#    self.totalFraction=pcr.scalar(0)
 #
 #  def dynamic(self):
 #    print self.currentTimeStep()
