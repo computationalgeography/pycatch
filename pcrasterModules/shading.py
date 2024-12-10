@@ -1,12 +1,8 @@
-import sys
 import pysolar.solar
 import pytz
 import math
 import supportingfunctions
-from pcraster.framework import *
 import pcraster as pcr
-from datetime import *
-import datetimePCRasterPython
 import component
 
 # notes
