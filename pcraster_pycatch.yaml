@@ -1,13 +1,15 @@
 name: pcraster_pycatch
 channels:
-- conda-forge
+  - conda-forge
+  - nodefaults
 dependencies:
-- python=3.10
-- spyder
-- matplotlib-base
-- pcraster
-- numpy
-- sphinx
-- scipy
-- sympy
-- pysolar
+  - python
+  - numpy
+  - pcraster
+  - spyder
+  - spyder-terminal
+  - matplotlib-base
+  - sphinx
+  - scipy
+  - sympy
+  - pysolar
