@@ -22,6 +22,7 @@ import component
 # note that south should be bottom of map!!
 # note that units of x coor should be equal to units of elevation on digital elevation map
 
+
 def createListOfSolarCritAngles(step, extendedDem):
     # creates a list where each element is a list with two items: first
     # item is the azimuth, second item is the solar crit angle map for
@@ -36,6 +37,7 @@ def createListOfSolarCritAngles(step, extendedDem):
         solarCritAngle = cover(horizontan(extendedDem, azimuth), 1.57)
         set.append([azimuth, solarCritAngle])
     return set
+
 
 class Shading(component.Component):
     def __init__(self, digitalElevationModel, latitudeFloatingPoint, longitudeFloatingPoint, timeZone, reduceRunTime, \
