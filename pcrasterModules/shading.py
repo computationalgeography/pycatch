@@ -142,7 +142,7 @@ class Shading(component.Component):
         b = self.aspectWithFlat
         termTwo = scalar(math.sin(a)) * sin(b) + scalar(math.cos(a)) * cos(b)
         termThree = math.sin(self.solarAltitudeRadians) * cos(self.demSlopeAngle)
-        self.fractionSolarBeamReceived = max(termOne * termTwo + termThree , 0.0)
+        self.fractionSolarBeamReceived = max(termOne * termTwo + termThree, 0.0)
         fractionSolarBeamReceivedFlatSurfaceAlsoNegative = math.sin(self.solarAltitudeRadians)
         # if statement required because max([a,b]) werkt niet na importeren PCRaster
         if fractionSolarBeamReceivedFlatSurfaceAlsoNegative < 0.0:
