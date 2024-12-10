@@ -23,142 +23,142 @@ import component
 # note that units of x coor should be equal to units of elevation on digital elevation map
 
 def createListOfSolarCritAngles(step,extendedDem):
-  # creates a list where each element is a list with two items: first
-  # item is the azimuth, second item is the solar crit angle map for
-  # that azimuth
-  # step is a floating point, recommended e.g. 0.1, ie about 6 degrees
-  azimuthRadians=supportingfunctions.frange(2*math.pi,0.0,step,2) + [2*math.pi]
-  set=[]
-  for azimuth in azimuthRadians:
-    # horizontan, assumed here it returns angle in radians, 1.57 is 90 degrees, position of sun
-    # 90 degrees; the cover operation is needed as horizontan does not calculate angles on the edge
-    # of the map, it is assumed these can always be in the sun (during the day)
-    solarCritAngle=cover(horizontan(extendedDem,azimuth),1.57)
-    set.append([azimuth,solarCritAngle])
-  return set
+    # creates a list where each element is a list with two items: first
+    # item is the azimuth, second item is the solar crit angle map for
+    # that azimuth
+    # step is a floating point, recommended e.g. 0.1, ie about 6 degrees
+    azimuthRadians=supportingfunctions.frange(2*math.pi,0.0,step,2) + [2*math.pi]
+    set=[]
+    for azimuth in azimuthRadians:
+        # horizontan, assumed here it returns angle in radians, 1.57 is 90 degrees, position of sun
+        # 90 degrees; the cover operation is needed as horizontan does not calculate angles on the edge
+        # of the map, it is assumed these can always be in the sun (during the day)
+        solarCritAngle=cover(horizontan(extendedDem,azimuth),1.57)
+        set.append([azimuth,solarCritAngle])
+    return set
 
 class Shading(component.Component):
-  def __init__(self, digitalElevationModel,latitudeFloatingPoint,longitudeFloatingPoint,timeZone,reduceRunTime, \
-              timeStepsToReport,setOfVariablesToReport):
+    def __init__(self, digitalElevationModel,latitudeFloatingPoint,longitudeFloatingPoint,timeZone,reduceRunTime, \
+                timeStepsToReport,setOfVariablesToReport):
 
-    # init for supsend and resume in filtering only
-    self.fractionSolarBeamReceived=scalar(0)
-    self.shaded=scalar(0)
-    self.shadedNoHorizonEffect=scalar(0)
-    self.solarAltitudeDegrees=scalar(0)
-    self.solarAltitudeRadians=scalar(0)
-    self.solarAzimuthDegrees=scalar(0)
-    self.solarAzimuthRadians=scalar(0)
-    self.solarAzimuthRadiansConverted=scalar(0)
-    self.solarCritAngle=scalar(0)
-    self.variablesToReport={}
+        # init for supsend and resume in filtering only
+        self.fractionSolarBeamReceived=scalar(0)
+        self.shaded=scalar(0)
+        self.shadedNoHorizonEffect=scalar(0)
+        self.solarAltitudeDegrees=scalar(0)
+        self.solarAltitudeRadians=scalar(0)
+        self.solarAzimuthDegrees=scalar(0)
+        self.solarAzimuthRadians=scalar(0)
+        self.solarAzimuthRadiansConverted=scalar(0)
+        self.solarCritAngle=scalar(0)
+        self.variablesToReport={}
 
-    # real inits
+        # real inits
 
-    # dem: bottom should be south
-    # reduceRunTime results in precalculation of horizontan output, with a step of 0.1 (see
-    # createListOfSolarCritAngles), the difference is really small because it only has effect on the
-    # shading and this is a very small number of pixels and mostly with a low solar angle already anyway
-    self.digitalElevationModel=digitalElevationModel
-    extendedDem=windowaverage(self.digitalElevationModel,celllength()*3)
-    self.extendedDem=cover(self.digitalElevationModel,extendedDem)
-    self.latitudeFloatingPoint=latitudeFloatingPoint
-    self.longitudeFloatingPoint=longitudeFloatingPoint
-    self.timeZone=timeZone
-    self.demSlopeAngle=atan(slope(self.digitalElevationModel))
-    self.aspect=aspect(digitalElevationModel)
-    self.aspectWithFlat=ifthenelse(nodirection(self.aspect),1.0,self.aspect)
-    self.reduceRunTime=reduceRunTime
-    if self.reduceRunTime:
-      self.solarCritAngleList=createListOfSolarCritAngles(0.1,self.extendedDem)
+        # dem: bottom should be south
+        # reduceRunTime results in precalculation of horizontan output, with a step of 0.1 (see
+        # createListOfSolarCritAngles), the difference is really small because it only has effect on the
+        # shading and this is a very small number of pixels and mostly with a low solar angle already anyway
+        self.digitalElevationModel=digitalElevationModel
+        extendedDem=windowaverage(self.digitalElevationModel,celllength()*3)
+        self.extendedDem=cover(self.digitalElevationModel,extendedDem)
+        self.latitudeFloatingPoint=latitudeFloatingPoint
+        self.longitudeFloatingPoint=longitudeFloatingPoint
+        self.timeZone=timeZone
+        self.demSlopeAngle=atan(slope(self.digitalElevationModel))
+        self.aspect=aspect(digitalElevationModel)
+        self.aspectWithFlat=ifthenelse(nodirection(self.aspect),1.0,self.aspect)
+        self.reduceRunTime=reduceRunTime
+        if self.reduceRunTime:
+            self.solarCritAngleList=createListOfSolarCritAngles(0.1,self.extendedDem)
 
-    self.timeStepsToReport=timeStepsToReport
-    self.setOfVariablesToReport=setOfVariablesToReport
+        self.timeStepsToReport=timeStepsToReport
+        self.setOfVariablesToReport=setOfVariablesToReport
 
-  def reportAsMaps(self,sample,timestep):
-    self.output_mapping = {
-                           'Mfs': self.fractionSolarBeamReceived,
-                           'Msc': self.solarCritAngle,
-                           'Msh': self.shaded
-                          }
-    self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
-    self.reportMaps(sample,timestep)
+    def reportAsMaps(self,sample,timestep):
+        self.output_mapping = {
+                               'Mfs': self.fractionSolarBeamReceived,
+                               'Msc': self.solarCritAngle,
+                               'Msh': self.shaded
+                              }
+        self.variablesToReport = self.rasters_to_report(self.setOfVariablesToReport)
+        self.reportMaps(sample,timestep)
 
-  def updateVariablesAsNumpyToReport(self):
-    self.variablesAsNumpyToReport = {
-                                    }
+    def updateVariablesAsNumpyToReport(self):
+        self.variablesAsNumpyToReport = {
+                                        }
 
-  def reportAsNumpyOneFile(self,locations,sample,timestep,endTimeStep):
-    self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpyOneFilePerRealization(locations,sample,timestep,endTimeStep)
+    def reportAsNumpyOneFile(self,locations,sample,timestep,endTimeStep):
+        self.updateVariablesAsNumpyToReport()
+        self.reportAsNumpyOneFilePerRealization(locations,sample,timestep,endTimeStep)
 
-  def reportAsNumpyMultipleFiles(self,locations,sample,timestep):
-    self.updateVariablesAsNumpyToReport()
-    self.reportAsNumpy(locations,sample,timestep)
+    def reportAsNumpyMultipleFiles(self,locations,sample,timestep):
+        self.updateVariablesAsNumpyToReport()
+        self.reportAsNumpy(locations,sample,timestep)
 
-  def horizontanFromList(self,azimuth):
-    # retrieve critical solar angle from list
-    for item in self.solarCritAngleList:
-      if item[0] > azimuth:
-        result = item
-        break
-    solarCritAngle=result[1]
-    return solarCritAngle
+    def horizontanFromList(self,azimuth):
+        # retrieve critical solar angle from list
+        for item in self.solarCritAngleList:
+            if item[0] > azimuth:
+                result = item
+                break
+        solarCritAngle=result[1]
+        return solarCritAngle
 
-  def calculateSolarAngles(self,timeDatetimeFormat):
-    # convert naive time to aware time
-    timezone = pytz.timezone(self.timeZone)
-    d_aware = timezone.localize(timeDatetimeFormat)
-    print(timeDatetimeFormat, d_aware)
-    # solar altitude, sometimes called solar angle
-    self.solarAltitudeDegrees=pysolar.solar.get_altitude(self.latitudeFloatingPoint,self.longitudeFloatingPoint,d_aware)
-    self.solarAltitudeRadians=math.radians(self.solarAltitudeDegrees)
-    # azimuth: west is -90 degrees, north is -180 degrees, east is -270 degrees
-    self.solarAzimuthDegrees=pysolar.solar.get_azimuth(self.latitudeFloatingPoint,self.longitudeFloatingPoint,d_aware)
-    self.solarAzimuthRadians=0.0-math.radians(self.solarAzimuthDegrees)
-    # solarAzimuthRadiansConverted: north is 0, east is 0.5 pi, south is pi, west is 1.5 pi
-    if self.solarAzimuthRadians < math.pi:
-       self.solarAzimuthRadiansConverted=self.solarAzimuthRadians+math.pi
-    else:
-       self.solarAzimuthRadiansConverted=self.solarAzimuthRadians-math.pi
-    if self.reduceRunTime:
-      self.solarCritAngle=self.horizontanFromList(self.solarAzimuthRadiansConverted)
-    else:
-      self.solarCritAngle=horizontan(self.extendedDem,self.solarAzimuthRadiansConverted)
+    def calculateSolarAngles(self,timeDatetimeFormat):
+        # convert naive time to aware time
+        timezone = pytz.timezone(self.timeZone)
+        d_aware = timezone.localize(timeDatetimeFormat)
+        print(timeDatetimeFormat, d_aware)
+        # solar altitude, sometimes called solar angle
+        self.solarAltitudeDegrees=pysolar.solar.get_altitude(self.latitudeFloatingPoint,self.longitudeFloatingPoint,d_aware)
+        self.solarAltitudeRadians=math.radians(self.solarAltitudeDegrees)
+        # azimuth: west is -90 degrees, north is -180 degrees, east is -270 degrees
+        self.solarAzimuthDegrees=pysolar.solar.get_azimuth(self.latitudeFloatingPoint,self.longitudeFloatingPoint,d_aware)
+        self.solarAzimuthRadians=0.0-math.radians(self.solarAzimuthDegrees)
+        # solarAzimuthRadiansConverted: north is 0, east is 0.5 pi, south is pi, west is 1.5 pi
+        if self.solarAzimuthRadians < math.pi:
+            self.solarAzimuthRadiansConverted=self.solarAzimuthRadians+math.pi
+        else:
+            self.solarAzimuthRadiansConverted=self.solarAzimuthRadians-math.pi
+        if self.reduceRunTime:
+            self.solarCritAngle=self.horizontanFromList(self.solarAzimuthRadiansConverted)
+        else:
+            self.solarCritAngle=horizontan(self.extendedDem,self.solarAzimuthRadiansConverted)
 
-  def updateShading(self,timeDatetimeFormat):
-    self.shadedNoHorizonEffect=pcrgt(scalar(self.solarCritAngle),math.radians(self.solarAltitudeDegrees))
-    self.shaded=ifthenelse(pcrlt(scalar(self.solarAltitudeDegrees),scalar(0.0)),boolean(1),self.shadedNoHorizonEffect)
-    return self.solarCritAngle,self.shaded
+    def updateShading(self,timeDatetimeFormat):
+        self.shadedNoHorizonEffect=pcrgt(scalar(self.solarCritAngle),math.radians(self.solarAltitudeDegrees))
+        self.shaded=ifthenelse(pcrlt(scalar(self.solarAltitudeDegrees),scalar(0.0)),boolean(1),self.shadedNoHorizonEffect)
+        return self.solarCritAngle,self.shaded
 
-  def updateIncidence(self,timeDatetimeFormat):
-    # incidence is the angle between the perpendicular plane of the incoming solar rays and the
-    # surface on which they are projected (i.e. the digital elevation model)
-    # equation 5 in O. van Dam, thesis, p. 71, note that last term should read cos(X) instead of cos(B)
-    termOne=math.cos(self.solarAltitudeRadians)*sin(self.demSlopeAngle)
-    a=self.solarAzimuthRadiansConverted
-    b=self.aspectWithFlat
-    termTwo=scalar(math.sin(a))*sin(b)+scalar(math.cos(a))*cos(b)
-    termThree=math.sin(self.solarAltitudeRadians)*cos(self.demSlopeAngle)
-    self.fractionSolarBeamReceived=max(termOne * termTwo + termThree ,0.0)
-    fractionSolarBeamReceivedFlatSurfaceAlsoNegative=math.sin(self.solarAltitudeRadians)
-    # if statement required because max([a,b]) werkt niet na importeren PCRaster
-    if fractionSolarBeamReceivedFlatSurfaceAlsoNegative < 0.0:
-      fractionSolarBeamReceivedFlatSurface=0.0
-    else:
-      fractionSolarBeamReceivedFlatSurface=fractionSolarBeamReceivedFlatSurfaceAlsoNegative
-    return self.fractionSolarBeamReceived, fractionSolarBeamReceivedFlatSurface
+    def updateIncidence(self,timeDatetimeFormat):
+        # incidence is the angle between the perpendicular plane of the incoming solar rays and the
+        # surface on which they are projected (i.e. the digital elevation model)
+        # equation 5 in O. van Dam, thesis, p. 71, note that last term should read cos(X) instead of cos(B)
+        termOne=math.cos(self.solarAltitudeRadians)*sin(self.demSlopeAngle)
+        a=self.solarAzimuthRadiansConverted
+        b=self.aspectWithFlat
+        termTwo=scalar(math.sin(a))*sin(b)+scalar(math.cos(a))*cos(b)
+        termThree=math.sin(self.solarAltitudeRadians)*cos(self.demSlopeAngle)
+        self.fractionSolarBeamReceived=max(termOne * termTwo + termThree ,0.0)
+        fractionSolarBeamReceivedFlatSurfaceAlsoNegative=math.sin(self.solarAltitudeRadians)
+        # if statement required because max([a,b]) werkt niet na importeren PCRaster
+        if fractionSolarBeamReceivedFlatSurfaceAlsoNegative < 0.0:
+            fractionSolarBeamReceivedFlatSurface=0.0
+        else:
+            fractionSolarBeamReceivedFlatSurface=fractionSolarBeamReceivedFlatSurfaceAlsoNegative
+        return self.fractionSolarBeamReceived, fractionSolarBeamReceivedFlatSurface
 
-  def update(self,timeDatetimeFormat):
-    self.calculateSolarAngles(timeDatetimeFormat)
-    self.solarCritAngle,self.shaded=self.updateShading(timeDatetimeFormat)
-    fractionSolarBeamReceivedNoShading,fractionSolarBeamReceivedFlatSurface =self.updateIncidence(timeDatetimeFormat)
-    fractionSolarBeamReceivedWithShading=ifthenelse(self.shaded,scalar(0),fractionSolarBeamReceivedNoShading)
-    return fractionSolarBeamReceivedWithShading, fractionSolarBeamReceivedFlatSurface, self.shaded
+    def update(self,timeDatetimeFormat):
+        self.calculateSolarAngles(timeDatetimeFormat)
+        self.solarCritAngle,self.shaded=self.updateShading(timeDatetimeFormat)
+        fractionSolarBeamReceivedNoShading,fractionSolarBeamReceivedFlatSurface =self.updateIncidence(timeDatetimeFormat)
+        fractionSolarBeamReceivedWithShading=ifthenelse(self.shaded,scalar(0),fractionSolarBeamReceivedNoShading)
+        return fractionSolarBeamReceivedWithShading, fractionSolarBeamReceivedFlatSurface, self.shaded
 
-  def printit(self):
-    print('solar altitude: ', self.solarAltitudeDegrees, 'solar azimuth: ', self.solarAzimuthDegrees)
-    print('solar azimuth radians, South is pi: ', self.solarAzimuthRadiansConverted)
+    def printit(self):
+        print('solar altitude: ', self.solarAltitudeDegrees, 'solar azimuth: ', self.solarAzimuthDegrees)
+        print('solar azimuth radians, South is pi: ', self.solarAzimuthRadiansConverted)
 
 ## test
 #
