@@ -27,7 +27,7 @@ def createListOfSolarCritAngles(step, extendedDem):
     # item is the azimuth, second item is the solar crit angle map for
     # that azimuth
     # step is a floating point, recommended e.g. 0.1, ie about 6 degrees
-    azimuthRadians = supportingfunctions.frange(2 *math.pi, 0.0, step, 2) + [2 *math.pi]
+    azimuthRadians = supportingfunctions.frange(2 * math.pi, 0.0, step, 2) + [2 * math.pi]
     set = []
     for azimuth in azimuthRadians:
         # horizontan, assumed here it returns angle in radians, 1.57 is 90 degrees, position of sun
@@ -60,7 +60,7 @@ class Shading(component.Component):
         # createListOfSolarCritAngles), the difference is really small because it only has effect on the
         # shading and this is a very small number of pixels and mostly with a low solar angle already anyway
         self.digitalElevationModel = digitalElevationModel
-        extendedDem = windowaverage(self.digitalElevationModel, celllength() *3)
+        extendedDem = windowaverage(self.digitalElevationModel, celllength() * 3)
         self.extendedDem = cover(self.digitalElevationModel, extendedDem)
         self.latitudeFloatingPoint = latitudeFloatingPoint
         self.longitudeFloatingPoint = longitudeFloatingPoint
@@ -115,12 +115,12 @@ class Shading(component.Component):
         self.solarAltitudeRadians = math.radians(self.solarAltitudeDegrees)
         # azimuth: west is -90 degrees, north is -180 degrees, east is -270 degrees
         self.solarAzimuthDegrees = pysolar.solar.get_azimuth(self.latitudeFloatingPoint, self.longitudeFloatingPoint, d_aware)
-        self.solarAzimuthRadians = 0.0 -math.radians(self.solarAzimuthDegrees)
+        self.solarAzimuthRadians = 0.0 - math.radians(self.solarAzimuthDegrees)
         # solarAzimuthRadiansConverted: north is 0, east is 0.5 pi, south is pi, west is 1.5 pi
         if self.solarAzimuthRadians < math.pi:
-            self.solarAzimuthRadiansConverted = self.solarAzimuthRadians +math.pi
+            self.solarAzimuthRadiansConverted = self.solarAzimuthRadians + math.pi
         else:
-            self.solarAzimuthRadiansConverted = self.solarAzimuthRadians -math.pi
+            self.solarAzimuthRadiansConverted = self.solarAzimuthRadians - math.pi
         if self.reduceRunTime:
             self.solarCritAngle = self.horizontanFromList(self.solarAzimuthRadiansConverted)
         else:
@@ -135,11 +135,11 @@ class Shading(component.Component):
         # incidence is the angle between the perpendicular plane of the incoming solar rays and the
         # surface on which they are projected (i.e. the digital elevation model)
         # equation 5 in O. van Dam, thesis, p. 71, note that last term should read cos(X) instead of cos(B)
-        termOne = math.cos(self.solarAltitudeRadians) *sin(self.demSlopeAngle)
+        termOne = math.cos(self.solarAltitudeRadians) * sin(self.demSlopeAngle)
         a = self.solarAzimuthRadiansConverted
         b = self.aspectWithFlat
-        termTwo = scalar(math.sin(a)) *sin(b) +scalar(math.cos(a)) *cos(b)
-        termThree = math.sin(self.solarAltitudeRadians) *cos(self.demSlopeAngle)
+        termTwo = scalar(math.sin(a)) * sin(b) + scalar(math.cos(a)) * cos(b)
+        termThree = math.sin(self.solarAltitudeRadians) * cos(self.demSlopeAngle)
         self.fractionSolarBeamReceived = max(termOne * termTwo + termThree , 0.0)
         fractionSolarBeamReceivedFlatSurfaceAlsoNegative = math.sin(self.solarAltitudeRadians)
         # if statement required because max([a,b]) werkt niet na importeren PCRaster
