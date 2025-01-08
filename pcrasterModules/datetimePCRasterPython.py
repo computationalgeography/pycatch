@@ -1,5 +1,3 @@
-import datetime
-
 # notes
 # time step duration in h
 

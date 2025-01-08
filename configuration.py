@@ -4,8 +4,8 @@ import pathlib
 numberOfTimeSteps = 10968
 
 # folder with input files (maps, timeseries)
-#inputFolder = "inputs"
-inputFolder = "../switzerland/40m_small_area"
+inputFolder = "inputs"
+#inputFolder = "../switzerland/40m_small_area"
 
 # select maps as input parameters and initial values or uniform values over the area
 mapsAsInput = False

@@ -1,6 +1,5 @@
 import pcraster as pcr
 import pcraster.framework as pcrfw
-import sys, generalfunctions
 import component
 
 # class to report random variables, mainly

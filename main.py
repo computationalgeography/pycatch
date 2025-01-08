@@ -72,8 +72,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     self.d_exchangevariables.cumulativePrecipitation = pcr.scalar(0)
 
   def dynamic(self):
-    import generalfunctions
-
     # time
     self.d_dateTimePCRasterPython.update()
     timeDatetimeFormat = self.d_dateTimePCRasterPython.getTimeDatetimeFormat()
@@ -204,7 +202,6 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
 
   def postmcloop(self):
     # required for reporting as numpy
-    import generalfunctions
     self.timeStepDuration = cfg.timeStepDurationHoursFloatingPointValue # needed in case of forking, else the instances have been deleted
     self.initializeTime(cfg.startTimeYearValue, cfg.startTimeMonthValue, cfg.startTimeDayValue, self.timeStepDuration) # needed in case of forking, else the instances have been deleted
     self.createInstancesInitial() # needed in case of forking, else the instances have been deleted

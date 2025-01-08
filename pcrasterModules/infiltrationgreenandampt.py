@@ -1,4 +1,3 @@
-import sys
 import pcraster as pcr
 import pcraster.framework as pcrfw
 import component

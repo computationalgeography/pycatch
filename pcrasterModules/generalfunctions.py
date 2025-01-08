@@ -15,7 +15,6 @@ import math
 #rpy2.robjects.numpy2ri.activate() # nodig bij nieuwere rpy2 versie
 #import rpy2.robjects as robjects
 ##
-from collections import deque
 #from PCRaster.NumPy import *
 import random
 #from osgeo import gdal
