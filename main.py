@@ -336,7 +336,7 @@ class CatchmentModel(pcrfw.DynamicModel, pcrfw.MonteCarloModel):
     if cfg.mapsAsInput:
       stream = pcr.boolean(cfg.streamValue)
     else:
-      upstreamArea = pcr.accuflux(cfg.lddMap,pcr.cellarea())
+      upstreamArea = pcr.accuflux(self.ldd, pcr.cellarea())
       stream = upstreamArea > 200000.0
 
     theSlope = pcr.slope(self.dem)
