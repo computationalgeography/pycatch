@@ -71,7 +71,7 @@ if with_shading is False:
   #fractionReceivedValue = 1.0
   #fractionReceivedFlatSurfaceValue = 1.0
   fractionReceivedValue = 0.0
-  fractionReceivedFlatSurfaceValue = 0.0 
+  fractionReceivedFlatSurfaceValue = 0.0
 
 ################
 # model inputs #
@@ -98,7 +98,7 @@ locations = str(pathlib.Path(inputFolder, "mergeOutFlowsNominal.map"))
 # timeseries inputs #
 #####################
 
-# meteorology 
+# meteorology
 # same value across area (timseries has two columns) except rainfall (two areas, three columns)
 rainfallFluxDetermTimeSeries = str(pathlib.Path(inputFolder, "rainfallFluxTwoCatchsJulAugSep0506.tss"))
 airTemperatureDetermString = str(pathlib.Path(inputFolder, "airTemperatureArnaJulAugSep0506.tss"))
@@ -119,6 +119,10 @@ if mapsAsInput:
   # meteorology
   # areas linked to rainfallFluxDetermTimeSeries (area code 1 and 2)
   rainfallFluxDetermTimeSeriesAreas = str(pathlib.Path(inputFolder, "mergeArnasSansaNominal.map"))
+  airTemperatureDetermTimeSeriesAreas = 1
+  relativeHumidityDetermTimeSeriesAreas = airTemperatureDetermTimeSeriesAreas
+  incomingShortwaveRadiationFlatSurfaceTimeSeriesAreas = airTemperatureDetermTimeSeriesAreas
+  windVelocityDetermTimeSeriesAreas = airTemperatureDetermTimeSeriesAreas
   elevationAboveSeaLevelOfMeteoStationValue = 900.0
 
   # interception
@@ -139,7 +143,7 @@ if mapsAsInput:
   # location of the stream, used to adjust regolith thickness there
   streamValue = str(pathlib.Path(inputFolder, "mergeStream.map"))
 
-  # subsurface water 
+  # subsurface water
   saturatedConductivityMetrePerDayValue = 37.0
   limitingPointFractionValue = str(pathlib.Path(inputFolder, "mergeLimitingPointFractionFS.map"))
   mergeWiltingPointFractionFSValue = str(pathlib.Path(inputFolder, "mergeWiltingPointFractionFS.map"))
@@ -153,7 +157,7 @@ if mapsAsInput:
   vegetationHeightValue = str(pathlib.Path(inputFolder, "mergeVegHeightFS.map"))
 
 else:
-  
+
   # forest (0) or no forest (1), only used when swapCatchments is True
   forestNoForest = 0
   areas = 0
@@ -161,6 +165,10 @@ else:
   # meteorology
   # areas linked to rainfallFluxDetermTimeSeries (area code 1 and 2)
   rainfallFluxDetermTimeSeriesAreas = 1
+  airTemperatureDetermTimeSeriesAreas = 1
+  relativeHumidityDetermTimeSeriesAreas = 1
+  incomingShortwaveRadiationFlatSurfaceTimeSeriesAreas = 1
+  windVelocityDetermTimeSeriesAreas = 1
   elevationAboveSeaLevelOfMeteoStationValue = 900.0
 
   # interception
@@ -178,7 +186,7 @@ else:
   # regolith geometry
   regolithThicknessHomogeneousValue = 0.5
 
-  # subsurface water 
+  # subsurface water
   saturatedConductivityMetrePerDayValue = 37.0
   limitingPointFractionValue = 0.276293
   mergeWiltingPointFractionFSValue = 0.1
