@@ -1,7 +1,6 @@
-from pcraster import *
-import sys
-from pcraster.framework import *
+import pcraster as pcr
 import component
+import generalfunctions
 
 # notes
 # time step duration in h
@@ -27,8 +26,8 @@ class SoilWashMMF(component.Component):
     self.stoneCoverFraction=stoneCoverFraction
     self.detachabilityOfSoilRunoff=detachabilityOfSoilRunoff
     self.vegetationCoverOfSoilFraction=vegetationCoverOfSoilFraction
-    self.stoneOrVegetationCover=min(self.vegetationCoverOfSoilFraction+self.stoneCoverFraction,1.0)
-    self.widthOfFlow=celllength()
+    self.stoneOrVegetationCover=pcr.min(self.vegetationCoverOfSoilFraction+self.stoneCoverFraction,1.0)
+    self.widthOfFlow=pcr.celllength()
     self.manningsN=manningsN
     dFifty=50.0  # mu metre median grain size
     self.transportCapacityCParameter=((dFifty + 5.0)/0.32)**-0.6   # Hessel, Jetten, 2007 (from Govers)
@@ -37,23 +36,23 @@ class SoilWashMMF(component.Component):
     self.soilPorosity=soilPorosity
     self.timeStepsToReport=timeStepsToReport
     self.setOfVariablesToReport=setOfVariablesToReport
-    self.netDepositionKgPerCell=scalar(0)
-    self.netDepositionMetre=scalar(0)
-    self.transportCapacityVolumeFraction = scalar(0)
-    self.streamPowerCmPerSec = scalar(0)
-    self.accuDeposition=scalar(0)
-    self.lateralFluxKg = scalar(0)
-    self.totalDetachKgPerCell = scalar(0)
-    self.transportCapacityKgPerCell = scalar(0)
+    self.netDepositionKgPerCell=pcr.scalar(0)
+    self.netDepositionMetre=pcr.scalar(0)
+    self.transportCapacityVolumeFraction = pcr.scalar(0)
+    self.streamPowerCmPerSec = pcr.scalar(0)
+    self.accuDeposition=pcr.scalar(0)
+    self.lateralFluxKg = pcr.scalar(0)
+    self.totalDetachKgPerCell = pcr.scalar(0)
+    self.transportCapacityKgPerCell = pcr.scalar(0)
     self.specificWeightRockKgPerCubicMetre=2650.0
-    self.detachmentByRaindropsKgPerSquareMetre=scalar(0)
-    self.flowVelocityMetrePerSecond=scalar(0)
-    self.netDepositionMetreCum=scalar(0)
+    self.detachmentByRaindropsKgPerSquareMetre=pcr.scalar(0)
+    self.flowVelocityMetrePerSecond=pcr.scalar(0)
+    self.netDepositionMetreCum=pcr.scalar(0)
 
     # conversion kg rock to height soil
     volumeRockMaterialCubicMetresOfOneKiloRock=1.0/self.specificWeightRockKgPerCubicMetre
     volumeSoilOfOneKiloRock=volumeRockMaterialCubicMetresOfOneKiloRock/(1.0-self.soilPorosity)
-    self.heightSoilOfOneKiloRock=volumeSoilOfOneKiloRock/cellarea()
+    self.heightSoilOfOneKiloRock=volumeSoilOfOneKiloRock/pcr.cellarea()
 
   def reportAsMaps(self, sample, timestep):
     self.output_mapping = {
@@ -72,16 +71,16 @@ class SoilWashMMF(component.Component):
     self.reportMaps(sample, timestep)
 
   def updateStoneOrVegetationCover(self,vegetationCover):
-    self.stoneOrVegetationCover=min(vegetationCover+self.stoneCoverFraction,1.0)
+    self.stoneOrVegetationCover=pcr.min(vegetationCover+self.stoneCoverFraction,1.0)
 
   def setSurfaceProperties(self,ldd,dem):
     ''' needs to be updated when geom changes
     '''
     self.ldd=ldd
     self.dem=dem
-    self.slope=slopeToDownstreamNeighbourNotFlat(self.dem,self.ldd,0.001)
-    slopeAngle=atan(self.slope)
-    self.sinOfSlope=sin(slopeAngle)
+    self.slope=generalfunctions.slopeToDownstreamNeighbourNotFlat(self.dem,self.ldd,0.001)
+    slopeAngle=pcr.atan(self.slope)
+    self.sinOfSlope=pcr.sin(slopeAngle)
 
 
   def kineticEnergyDirectRain(self,erosiveRainfallIntensityFlux,directRainFlux):
@@ -90,19 +89,19 @@ class SoilWashMMF(component.Component):
     directRainFlux                rain falling between gaps (i.e. through the gapfraction), represents the amount
                                   i.e. it is a multiplier, it is the amount of water spreaded over the whole cell
     '''
-    
+
     erosiveRainfallIntensityMMPerHour=erosiveRainfallIntensityFlux*1000.0
     directRainAmountMM=directRainFlux*self.rainstormDuration*1000.0
     directThroughfallEnergyMayBecomeNegative=directRainAmountMM * \
-                                             (8.95 + 8.44 * log10(erosiveRainfallIntensityMMPerHour))
-    directThroughfallEnergy=max(0,directThroughfallEnergyMayBecomeNegative)
+                                             (8.95 + 8.44 * pcr.log10(erosiveRainfallIntensityMMPerHour))
+    directThroughfallEnergy=pcr.max(0,directThroughfallEnergyMayBecomeNegative)
     #report(directThroughfallEnergy,'dtfe.map')
     return directThroughfallEnergy
 
   def kineticEnergyLeafDrainage(self):
     # LET OP: dit is totaal over een jaar, heb ik dus gedeeld door factor
     # deze component is behoorlijk klein tov kineticEnergy, wordt in VWK1 weggelaten
-    leafDrainageEnergy=ifthenelse(self.plantHeightMetres < 0.15, scalar(0), (15.8 * sqrt(self.plantHeightMetres)) - 5.87)
+    leafDrainageEnergy=pcr.ifthenelse(self.plantHeightMetres < 0.15, pcr.scalar(0), (15.8 * pcr.sqrt(self.plantHeightMetres)) - 5.87)
     numberHoursRainPerYear=20.0*24.0
     numberHoursPerYear=365.0*24.0
     leafDrainageEnergyPerHour=leafDrainageEnergy*(numberHoursRainPerYear/numberHoursPerYear)
@@ -128,7 +127,7 @@ class SoilWashMMF(component.Component):
 
   def detachmentSoilByRunoff(self,runoffMetreWaterDepthPerHour):
     '''assume one grain size
-    note that vegetation cover and stone cover of soil surface are summed 
+    note that vegetation cover and stone cover of soil surface are summed
     '''
     runoffMMWaterDepth=runoffMetreWaterDepthPerHour*1000*self.rainstormDuration
     detachmentByRunoffKgPerSquareMetre=self.detachabilityOfSoilRunoff * runoffMMWaterDepth**1.5 * \
@@ -144,22 +143,22 @@ class SoilWashMMF(component.Component):
     self.flowVelocityMetrePerSecond=( (runoffCubicMetresPerSecond**(2.0/5.0)) * (self.slope ** (3.0/10.0)) ) / \
                              ( (self.manningsN ** (3.0/5.0)) * (self.widthOfFlow ** (2.0 / 5.0)) )
     return self.flowVelocityMetrePerSecond
-   
-  def transportCapacity(self,runoffCubicMetresPerHour): 
+
+  def transportCapacity(self,runoffCubicMetresPerHour):
     '''
     This is according to Hessel & Jetten 2007, the LISEM manual, and de Roo, 1996.
     They follow Govers, 1990.
     Conversion to cm is required, as the threshold in Govers 1990 is also in cm
     The unit of unit stream power is L/T, as it is calculated by multiplying
     flow velocity with gradient. So when it is calculated using velocity in m/s
-    you get it in m/s and when it is calculated using velocity in cm/s, you get it in 
+    you get it in m/s and when it is calculated using velocity in cm/s, you get it in
     cm/s.
     '''
     flowVelocityMetrePerSecond = self.flowVelocity(runoffCubicMetresPerHour)
     streamPowerMetrePerSecond = flowVelocityMetrePerSecond * self.slope
     self.streamPowerCmPerSec = (streamPowerMetrePerSecond * 100)
     self.transportCapacityVolumeFraction = self.transportCapacityCParameter * \
-                                       max(0.0,(self.streamPowerCmPerSec - self.criticalStreamPowerCmPerSec)) ** \
+                                       pcr.max(0.0,(self.streamPowerCmPerSec - self.criticalStreamPowerCmPerSec)) ** \
                                        self.transportCapacityEtaParameter
     # original version up to feb 2014
     #transportCapacityKg=self.transportCapacityVolumeFraction*specificWeightKgPerCubicMetre*self.rainstormDuration
@@ -172,7 +171,7 @@ class SoilWashMMF(component.Component):
 
   def kgToMetreHeight(self,kgSoilPerCell):
     heightSoil=self.heightSoilOfOneKiloRock*kgSoilPerCell
-    return heightSoil 
+    return heightSoil
 
   def calculateWash(self,runoffMetreWaterDepthPerHour,erosiveRainfallIntensityFlux,directRainFlux):
     '''
@@ -184,12 +183,12 @@ class SoilWashMMF(component.Component):
     runoffDetachmentKgPerSquareMetre = self.detachmentSoilByRunoff(runoffMetreWaterDepthPerHour)
     raindropDetachmentKgPerSquareMetre = self.detachmentSoilByRaindrops(erosiveRainfallIntensityFlux,directRainFlux)
 
-    self.totalDetachKgPerCell = cellarea()*(runoffDetachmentKgPerSquareMetre+raindropDetachmentKgPerSquareMetre)
+    self.totalDetachKgPerCell = pcr.cellarea()*(runoffDetachmentKgPerSquareMetre+raindropDetachmentKgPerSquareMetre)
 
-    self.transportCapacityKgPerCell = self.transportCapacity(runoffMetreWaterDepthPerHour*cellarea())
+    self.transportCapacityKgPerCell = self.transportCapacity(runoffMetreWaterDepthPerHour*pcr.cellarea())
 
-    self.lateralFluxKg=accucapacityflux(self.ldd,self.totalDetachKgPerCell,self.transportCapacityKgPerCell)
-    self.accuDeposition=accucapacitystate( \
+    self.lateralFluxKg=pcr.accucapacityflux(self.ldd,self.totalDetachKgPerCell,self.transportCapacityKgPerCell)
+    self.accuDeposition=pcr.accucapacitystate( \
                                 self.ldd,self.totalDetachKgPerCell,self.transportCapacityKgPerCell)
     self.netDepositionKgPerCell=self.accuDeposition-self.totalDetachKgPerCell
     self.netDepositionMetre=self.kgToMetreHeight(self.netDepositionKgPerCell)
@@ -198,11 +197,11 @@ class SoilWashMMF(component.Component):
            self.totalDetachKgPerCell, self.transportCapacityKgPerCell
 
   def noWash(self):
-    self.netDepositionKgPerCell=spatial(scalar(0))
-    self.lateralFluxKg=spatial(scalar(0))
-    self.totalDetachKgPerCell=spatial(scalar(0))
-    self.transportCapacityKgPerCell=spatial(scalar(0))
-    self.netDepositionMetre=spatial(scalar(0))
+    self.netDepositionKgPerCell=pcr.spatial(pcr.scalar(0))
+    self.lateralFluxKg=pcr.spatial(pcr.scalar(0))
+    self.totalDetachKgPerCell=pcr.spatial(pcr.scalar(0))
+    self.transportCapacityKgPerCell=pcr.spatial(pcr.scalar(0))
+    self.netDepositionMetre=pcr.spatial(pcr.scalar(0))
     return self.netDepositionKgPerCell, self.netDepositionMetre, self.lateralFluxKg, \
            self.totalDetachKgPerCell, self.transportCapacityKgPerCell
 
@@ -211,20 +210,20 @@ class SoilWashMMF(component.Component):
 #ldd=lddcreate(dem,1e31,1e31,1e31,1e31)
 #plantHeightMetres=5.0
 #stoneCoverFraction=0.1
-#vegetationCoverOfSoilFraction=0.1  
+#vegetationCoverOfSoilFraction=0.1
 #manningsN=0.03 # 'original'
 #detachabilityOfSoilRaindrops=1.6 # 'original'  (used for all scenarios)
 #detachabilityOfSoilRunoff=6.4 #'original'
 #durationOfRainstorm = 1.0
 #soilPorosityFraction = 0.4
-#   
+#
 #d_soilwashMMF=SoilWashMMF( \
 #                                              ldd,
 #                                              dem,
 #                                              durationOfRainstorm,
 #                                              plantHeightMetres,
 #                                              detachabilityOfSoilRaindrops,
-#                                              stoneCoverFraction, 
+#                                              stoneCoverFraction,
 #                                              detachabilityOfSoilRunoff,
 #                                              vegetationCoverOfSoilFraction,
 #                                              manningsN,
